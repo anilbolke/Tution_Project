@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jocata API - JSON Formats & Calling Methods</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0b3d63 0%, #1e5a8e 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+
+        nav h2 {
+            margin-bottom: 15px;
+            color: #0b3d63;
+        }
+
+        nav .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        nav a {
+            display: block;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-left: 4px solid #0b3d63;
+            text-decoration: none;
+            color: #333;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            background: #e0e0e0;
+            border-left-color: #1e5a8e;
+        }
+
+        .section {
+            background: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #0b3d63;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #0b3d63;
+        }
+
+        .section h3 {
+            color: #1e5a8e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .section h4 {
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-left: 4px solid;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .code-block.json {
+            border-left-color: #f39c12;
+        }
+
+        .code-block.java {
+            border-left-color: #667eea;
+        }
+
+        .code-block.curl {
+            border-left-color: #e74c3c;
+        }
+
+        .code-label {
+            font-size: 0.85em;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .api-box {
+            background: #f9f9f9;
+            border-left: 5px solid #0b3d63;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .method-section {
+            background: #f0f8ff;
+            border-left: 5px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            background: #0b3d63;
+            color: white;
+        }
+
+        .tab-button:hover {
+            background: #1e5a8e;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .highlight {
+            background: #fff8e1;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th {
+            background: #0b3d63;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:hover {
+            background: #f5f5f5;
+        }
+
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .copy-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            float: right;
+            margin-top: -35px;
+            margin-right: 10px;
+        }
+
+        .copy-button:hover {
+            background: #218838;
+        }
+
+        .line-number {
+            color: #666;
+            margin-right: 15px;
+            display: inline-block;
+            width: 30px;
+            text-align: right;
+        }
+
+        footer {
+            background: #0b3d63;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 40px;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-box {
+            padding: 20px;
+            border-radius: 8px;
+            background: #f0f0f0;
+        }
+
+        .comparison-box h4 {
+            color: #0b3d63;
+            margin-top: 0;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #0b3d63;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #0b3d63;
+            border-radius: 5px;
+        }
+
+        ul {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .section, header {
+                page-break-inside: avoid;
+            }
+
+            nav {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            nav .nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .code-block {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>📋 Jocata API - JSON Request Formats & Methods</h1>
+            <div class="subtitle">Complete Implementation Guide with API Calling Methods</div>
+        </header>
+
+        <!-- NAVIGATION -->
+        <nav>
+            <h2>📋 Quick Navigation</h2>
+            <div class="nav-grid">
+                <a href="#name-request">Name Screening JSON</a>
+                <a href="#txn-request">Transaction Screening JSON</a>
+                <a href="#health-request">Health Check</a>
+                <a href="#methods">Calling Methods</a>
+                <a href="#java-methods">Java Implementations</a>
+                <a href="#curl-examples">cURL Examples</a>
+                <a href="#error-handling">Error Handling</a>
+            </div>
+        </nav>
+
+        <!-- NAME SCREENING REQUEST -->
+        <div class="section" id="name-request">
+            <h2>🔍 Name Screening API - Complete JSON Format</h2>
+
+            <h3>Endpoint: POST /apiscreening/v1</h3>
+
+            <h4>Minimum Required JSON (Simplest Form)</h4>
+            <div class="code-block json">
+                <span class="code-label">📄 Minimum Request - Only Name</span>
+{
+  "rampRequest": {
+    "listMatchingPayload": {
+      "requestListVO": {
+        "businessUnit": "RAMP",
+        "subBusinessUnit": "API",
+        "requestType": "API",
+        "requestUuId": "IBL-TEST-20240101-001",
+        "requestVOList": [
+          {
+            "name": "JOHN DOE",
+            "customerId": "CUST-001"
+          }
+        ]
+      }
+    }
+  }
+}
+            </div>
+
+            <h4>Complete JSON (All Fields)</h4>
+            <div class="code-block json">
+                <span class="code-label">📄 Complete Request - All Supported Fields</span>
+{
+  "rampRequest": {
+    "listMatchingPayload": {
+      "requestListVO": {
+        "businessUnit": "RAMP",
+        "subBusinessUnit": "API",
+        "requestType": "API",
+        "requestUuId": "IBL-TEST-20240115-001",
+        "requestVOList": [
+          {
+            "name": "ERIKA CSANYI",
+            "entityName": "ACME CORPORATION",
+            "dob": "010169",
+            "nationality": "HUNGARIAN",
+            "placeOfBirth": "BUDAPEST",
+            "country": "INDIA",
+            "state": "MAHARASHTRA",
+            "city": "MUMBAI",
+            "pincode": "400001",
+            "address": "123 Business Park, Sector 5",
+            "concatAddress": "123 Business Park, Sector 5, MUMBAI, MAHARASHTRA, INDIA",
+            "pan": "AABCD1234A",
+            "passport": "P123456789",
+            "aadhar": "123456789012",
+            "voterId": "VOT123456789",
+            "drivingLicence": "DL001123456",
+            "rationCardNo": "RC123456",
+            "din": "00001111",
+            "cin": "U12345AB1234CD1234E",
+            "gst": "27AABCD1234F1Z0",
+            "tin": "TIN123456789",
+            "ssn": "123456789",
+            "digitalID": "DID123456",
+            "docNumber": "DOC123456",
+            "allid": "ALLID123456",
+            "phone": "+91-9876543210",
+            "email": "erika.csanyi@example.com",
+            "customerId": "CUST-MATCH-01"
+          }
+        ]
+      }
+    }
+  }
+}
+            </div>
+
+            <h4>Response Format</h4>
+            <div class="code-block json">
+                <span class="code-label">📄 Response - No Match</span>
+{
+  "rampResponse": {
+    "statusCode": "000",
+    "statusMessage": "Success",
+    "listMatchingResponse": {
+      "responseListVO": [
+        {
+          "requestId": "IBL-TEST-20240115-001",
+          "responseId": "RESP-2024-001",
+          "matchFlag": "N",
+          "matchCount": 0,
+          "matches": []
+        }
+      ]
+    }
+  }
+}
+            </div>
+
+            <div class="code-block json">
+                <span class="code-label">📄 Response - With Matches</span>
+{
+  "rampResponse": {
+    "statusCode": "000",
+    "statusMessage": "Success",
+    "listMatchingResponse": {
+      "responseListVO": [
+        {
+          "requestId": "IBL-TEST-20240115-001",
+          "responseId": "RESP-2024-002",
+          "matchFlag": "Y",
+          "matchCount": 2,
+          "matches": [
+            {
+              "matchedName": "ERIK CSANYI",
+              "matchType": "Name Match",
+              "matchProbability": "98",
+              "listCode": "OFAC",
+              "listName": "US Treasury OFAC SDN List",
+              "listVersion": "2024.01",
+              "caseId": "CASE-001",
+              "remarks": "True Match - Sanction List"
+            },
+            {
+              "matchedName": "ERIKA SZANYI",
+              "matchType": "Name & DOB Match",
+              "matchProbability": "95",
+              "listCode": "EU",
+              "listName": "EU Consolidated Sanctions List",
+              "listVersion": "2024.01",
+              "caseId": "CASE-002",
+              "remarks": "True Match - EU Sanctions"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+            </div>
+
+            <h3>Field Descriptions</h3>
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>Type</th>
+                    <th>Required</th>
+                    <th>Format/Example</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><strong>businessUnit</strong></td>
+                    <td>String</td>
+                    <td>✓</td>
+                    <td>"RAMP"</td>
+                    <td>Always "RAMP" for this API</td>
+                </tr>
+                <tr>
+                    <td><strong>subBusinessUnit</strong></td>
+                    <td>String</td>
+                    <td>✓</td>
+                    <td>"API"</td>
+                    <td>Always "API" for this API</td>
+                </tr>
+                <tr>
+                    <td><strong>requestType</strong></td>
+                    <td>String</td>
+                    <td>✓</td>
+                    <td>"API"</td>
+                    <td>Always "API" for Name Screening</td>
+                </tr>
+                <tr>
+                    <td><strong>requestUuId</strong></td>
+                    <td>String</td>
+                    <td>✓</td>
+                    <td>"IBL-TEST-20240115-001"</td>
+                    <td>Unique request identifier</td>
+                </tr>
+                <tr>
+                    <td><strong>name</strong></td>
+                    <td>String</td>
+                    <td>✓</td>
+                    <td>"ERIKA CSANYI"</td>
+                    <td>Full name in UPPERCASE</td>
+                </tr>
+                <tr>
+                    <td><strong>dob</strong></td>
+                    <td>String</td>
+                    <td></td>
+                    <td>"010169"</td>
+                    <td>Format: DDMMMYYYY (e.g., 010169 = 1 Jan 1969)</td>
+                </tr>
+                <tr>
+                    <td><strong>nationality</strong></td>
+                    <td>String</td>
+                    <td></td>
+                    <td>"HUNGARIAN"</td>
+                    <td>Country of nationality</td>
+                </tr>
+                <tr>
+                    <td><strong>country</strong></td>
+                    <td>String</td>
+                    <td></td>
+                    <td>"INDIA"</td>
+                    <td>Country of residence</td>
+                </tr>
+                <tr>
+                    <td><strong>pan</strong></td>
+                    <td>String</td>
+                    <td></td>
+                    <td>"AABCD1234A"</td>
+                    <td>Indian PAN (10 characters)</td>
+                </tr>
+                <tr>
+                    <td><strong>aadhar</strong></td>
+                    <td>String</td>
+                    <td></td>
+                    <td>"123456789012"</td>
+                    <td>Indian Aadhar (12 digits)</td>
+                </tr>
+                <tr>
+                    <td><strong>passport</strong></td>
+                    <td>String</td>
+                    <td></td>
+                    <td>"P123456789"</td>
+                    <td>Passport number</td>
+                </tr>
+                <tr>
+                    <td><strong>customerId</strong></td>
+                    <td>String</td>
+                    <td></td>
+                    <td>"CUST-MATCH-01"</td>
+                    <td>Your internal customer ID</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- TRANSACTION SCREENING REQUEST -->
+        <div class="section" id="txn-request">
+            <h2>💰 Transaction Screening API - Complete JSON Format</h2>
+
+            <h3>Endpoint: POST /transactionscreening/v1</h3>
+
+            <h4>Minimum Required JSON</h4>
+            <div class="code-block json">
+                <span class="code-label">📄 Minimum Request - Sender & Receiver</span>
+{
+  "rampRequest": {
+    "listMatchingPayload": {
+      "requestListVO": {
+        "businessUnit": "RAMP",
+        "subBusinessUnit": "API",
+        "requestType": "TSG",
+        "tranId": "TXN-90001",
+        "requestVOList": [
+          {
+            "type": "sender",
+            "customerType": "I",
+            "name": "JOHN DOE",
+            "customerId": "CUST-SENDER-01"
+          },
+          {
+            "type": "receiver",
+            "customerType": "I",
+            "name": "RAJESH KUMAR",
+            "customerId": "CUST-RECEIVER-01"
+          }
+        ]
+      }
+    }
+  }
+}
+            </div>
+
+            <h4>Complete JSON (All Fields)</h4>
+            <div class="code-block json">
+                <span class="code-label">📄 Complete Transaction Screening Request</span>
+{
+  "rampRequest": {
+    "listMatchingPayload": {
+      "requestListVO": {
+        "businessUnit": "RAMP",
+        "subBusinessUnit": "API",
+        "requestType": "TSG",
+        "tranId": "TXN-90001",
+        "accountNumber": "ACC-12345",
+        "remarks": "outward remittance",
+        "requestVOList": [
+          {
+            "type": "sender",
+            "customerType": "I",
+            "name": "JOHN DOE",
+            "dob": "01/01/1975",
+            "nationality": "USA",
+            "country": "USA",
+            "state": "NEW YORK",
+            "city": "NEW YORK",
+            "pincode": "10001",
+            "address": "456 Business Ave",
+            "contactAddress": "456 Business Ave, NEW YORK, NY, USA",
+            "pan": "AABCD1234B",
+            "passport": "P987654321",
+            "phone": "+1-2125551234",
+            "email": "sender@example.com",
+            "customerId": "CUST-SENDER-01"
+          },
+          {
+            "type": "receiver",
+            "customerType": "I",
+            "name": "RAJESH KUMAR",
+            "dob": "01/01/1980",
+            "nationality": "INDIAN",
+            "country": "INDIA",
+            "state": "MAHARASHTRA",
+            "city": "MUMBAI",
+            "pincode": "400001",
+            "address": "789 Residency Lane",
+            "contactAddress": "789 Residency Lane, MUMBAI, MAHARASHTRA, INDIA",
+            "aadhar": "987654321012",
+            "pan": "AABCD1234C",
+            "phone": "+91-9876543210",
+            "email": "receiver@example.com",
+            "customerId": "CUST-RECEIVER-01"
+          }
+        ]
+      }
+    }
+  }
+}
+            </div>
+
+            <h3>Key Differences from Name Screening</h3>
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>Name Screening</th>
+                    <th>Transaction Screening</th>
+                </tr>
+                <tr>
+                    <td><strong>requestType</strong></td>
+                    <td>"API"</td>
+                    <td>"TSG"</td>
+                </tr>
+                <tr>
+                    <td><strong>type (in party)</strong></td>
+                    <td>Not present</td>
+                    <td>"sender", "receiver", "port", "vessel"</td>
+                </tr>
+                <tr>
+                    <td><strong>customerType (MANDATORY)</strong></td>
+                    <td>Optional</td>
+                    <td>✓ Required: "I" or "E"</td>
+                </tr>
+                <tr>
+                    <td><strong>dob Format</strong></td>
+                    <td>DDMMMYYYY (010169)</td>
+                    <td>DD/MM/YYYY (01/01/1975)</td>
+                </tr>
+                <tr>
+                    <td><strong>address Field</strong></td>
+                    <td>concatAddress</td>
+                    <td>contactAddress</td>
+                </tr>
+                <tr>
+                    <td><strong>tranId</strong></td>
+                    <td>Not present</td>
+                    <td>✓ Required</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- HEALTH CHECK REQUEST -->
+        <div class="section" id="health-request">
+            <h2>🏥 Health Check API</h2>
+
+            <h3>Endpoint: GET /health</h3>
+
+            <h4>Request (No Body Required)</h4>
+            <div class="code-block curl">
+                <span class="code-label">🔧 cURL Request</span>
+curl -X GET https://api.jocata.com/health \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json"
+            </div>
+
+            <h4>Response Format</h4>
+            <div class="code-block json">
+                <span class="code-label">📄 Health Check Response</span>
+{
+  "status": "UP",
+  "gatewayReachable": true,
+  "encryptOk": true,
+  "configValid": true,
+  "apiVersion": "1.0.2",
+  "httpStatus": 200,
+  "timestamp": "2024-01-15T10:30:45Z",
+  "responseTime": "245ms",
+  "checks": {
+    "database": "UP",
+    "encryption": "OK",
+    "gateway": "REACHABLE"
+  }
+}
+            </div>
+        </div>
+
+        <!-- CALLING METHODS -->
+        <div class="section" id="methods">
+            <h2>🔧 Methods for Calling the APIs</h2>
+
+            <h3>Method 1: Using JocataClient (Recommended)</h3>
+
+            <div class="api-box">
+                <p><strong>✓ Recommended Method</strong> - Handles encryption/decryption automatically</p>
+
+                <h4>Setup</h4>
+                <div class="code-block java">
+                    <span class="code-label">☕ JocataClient Setup</span>
+import com.fable.apiclient.jocata.JocataClient;
+import com.api.exh.integration.jocata.JocataClientHolder;
+
+// Get singleton instance
+JocataClient jc = JocataClientHolder.get();
+
+// Or create new instance
+JocataClient jc = new JocataClient("/path/to/api-client.properties");
+                </div>
+
+                <h4>Call Name Screening</h4>
+                <div class="code-block java">
+                    <span class="code-label">☕ Name Screening Call</span>
+try {
+    // Build request
+    Map&lt;String, Object&gt; request = new LinkedHashMap&lt;&gt;();
+    request.put("rampRequest", /* ... */);
+
+    // Convert to JSON
+    String jsonRequest = Json.write(request);
+
+    // Send request (encryption handled internally)
+    String jsonResponse = jc.invoke("/apiscreening/v1", jsonRequest);
+
+    // Parse response
+    Map&lt;String, Object&gt; response = Json.parseObject(jsonResponse);
+    System.out.println("Status: " + response.get("rampResponse"));
+
+} catch (ApiException e) {
+    System.err.println("API Error [" + e.kind() + "]: " + e.getMessage());
+    System.err.println("HTTP Status: " + e.statusCode());
+    System.err.println("Response: " + e.responseBody());
+}
+                </div>
+            </div>
+
+            <h3>Method 2: Using REST Client with Manual Encryption</h3>
+
+            <div class="api-box">
+                <p><strong>Advanced Method</strong> - Manual control over encryption/decryption</p>
+
+                <h4>Steps</h4>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <strong>Build JSON Request</strong>
+                    <p>Create the request JSON object</p>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <strong>Encrypt Request</strong>
+                    <p>Use JocataClient.encryptEnvelope(jsonRequest)</p>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <strong>Send Encrypted Request</strong>
+                    <p>POST the encrypted envelope to API endpoint</p>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <strong>Decrypt Response</strong>
+                    <p>Decrypt response using JocataClient</p>
+                </div>
+
+                <h4>Implementation</h4>
+                <div class="code-block java">
+                    <span class="code-label">☕ Manual Encryption Method</span>
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+
+public class ManualEncryptionExample {
+
+    public void callJocataAPI() throws Exception {
+        JocataClient jc = JocataClientHolder.get();
+
+        // Step 1: Build JSON request
+        String jsonRequest = buildRequestJSON();
+
+        // Step 2: Encrypt request
+        String encryptedEnvelope = jc.encryptEnvelope(jsonRequest);
+
+        // Step 3: Send encrypted request using HTTP client
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost("https://api.jocata.com/apiscreening/v1");
+
+        request.setHeader("Content-Type", "application/json");
+        request.setHeader("Authorization", "Bearer YOUR_TOKEN");
+        request.setEntity(new StringEntity(encryptedEnvelope));
+
+        HttpResponse response = httpClient.execute(request);
+        String encryptedResponse = EntityUtils.toString(response.getEntity());
+
+        // Step 4: Decrypt response
+        String jsonResponse = jc.decryptResponse(encryptedResponse);
+
+        System.out.println("Response: " + jsonResponse);
+    }
+}
+                </div>
+            </div>
+
+            <h3>Method 3: Using HTTP Client (OkHttp)</h3>
+
+            <div class="api-box">
+                <p><strong>Modern HTTP Library</strong> - OkHttp with JocataClient encryption</p>
+
+                <h4>Dependency</h4>
+                <div class="code-block java">
+                    <span class="code-label">📦 Maven Dependency</span>
+&lt;dependency&gt;
+    &lt;groupId&gt;com.squareup.okhttp3&lt;/groupId&gt;
+    &lt;artifactId&gt;okhttp&lt;/artifactId&gt;
+    &lt;version&gt;4.11.0&lt;/version&gt;
+&lt;/dependency&gt;
+                </div>
+
+                <h4>Implementation</h4>
+                <div class="code-block java">
+                    <span class="code-label">☕ OkHttp Implementation</span>
+import okhttp3.*;
+
+public class OkHttpJocataClient {
+
+    private static final OkHttpClient httpClient = new OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .build();
+
+    public String callNameScreening(String jsonRequest) throws Exception {
+        JocataClient jc = JocataClientHolder.get();
+
+        // Encrypt request
+        String encryptedBody = jc.encryptEnvelope(jsonRequest);
+
+        // Build request
+        Request request = new Request.Builder()
+            .url("https://api.jocata.com/apiscreening/v1")
+            .post(RequestBody.create(encryptedBody, MediaType.parse("application/json")))
+            .addHeader("Authorization", "Bearer YOUR_TOKEN")
+            .addHeader("Content-Type", "application/json")
+            .build();
+
+        // Execute request
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected code " + response);
+            }
+
+            // Get response body
+            String encryptedResponse = response.body().string();
+
+            // Decrypt response
+            String jsonResponse = jc.decryptResponse(encryptedResponse);
+
+            return jsonResponse;
+        }
+    }
+}
+                </div>
+            </div>
+
+            <h3>Method 4: Using RestTemplate (Spring Boot)</h3>
+
+            <div class="api-box">
+                <p><strong>Spring Boot Integration</strong> - Using RestTemplate</p>
+
+                <h4>Configuration Bean</h4>
+                <div class="code-block java">
+                    <span class="code-label">☕ Spring Configuration</span>
+@Configuration
+public class JocataClientConfig {
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+            .setConnectTimeout(Duration.ofSeconds(10))
+            .setReadTimeout(Duration.ofSeconds(30))
+            .build();
+    }
+
+    @Bean
+    public JocataApiService jocataApiService(RestTemplate restTemplate) {
+        return new JocataApiService(restTemplate);
+    }
+}
+                </div>
+
+                <h4>Service Implementation</h4>
+                <div class="code-block java">
+                    <span class="code-label">☕ Spring RestTemplate Service</span>
+@Service
+public class JocataApiService {
+
+    private final RestTemplate restTemplate;
+    private final String API_URL = "https://api.jocata.com";
+
+    public JocataApiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public String callNameScreening(String jsonRequest) throws Exception {
+        JocataClient jc = JocataClientHolder.get();
+
+        // Encrypt request
+        String encryptedBody = jc.encryptEnvelope(jsonRequest);
+
+        // Set headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer YOUR_TOKEN");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Create HTTP entity
+        HttpEntity&lt;String&gt; entity = new HttpEntity&lt;&gt;(encryptedBody, headers);
+
+        try {
+            // Send POST request
+            ResponseEntity&lt;String&gt; response = restTemplate.postForEntity(
+                API_URL + "/apiscreening/v1",
+                entity,
+                String.class
+            );
+
+            // Decrypt response
+            String jsonResponse = jc.decryptResponse(response.getBody());
+
+            return jsonResponse;
+
+        } catch (HttpClientErrorException e) {
+            throw new JocataApiException("API Error: " + e.getMessage(), e);
+        }
+    }
+}
+                </div>
+            </div>
+        </div>
+
+        <!-- JAVA IMPLEMENTATIONS -->
+        <div class="section" id="java-methods">
+            <h2>☕ Complete Java Implementation Methods</h2>
+
+            <h3>Complete Name Screening Service</h3>
+
+            <button onclick="toggleCode(this)" class="tab-button">
+                Show Code
+            </button>
+
+            <div class="tab-content" style="display: none;">
+                <div class="code-block java">
+                    <span class="code-label">☕ Complete NameScreeningService.java</span>
+package com.api.exh.service.jocata;
+
+import com.fable.apiclient.Json;
+import com.fable.apiclient.ApiException;
+import com.fable.apiclient.jocata.JocataClient;
+import com.api.exh.integration.jocata.JocataClientHolder;
+import java.util.*;
+
+@Service
+@Slf4j
+public class NameScreeningService {
+
+    public ScreeningResponse screenName(ScreeningRequest request) throws Exception {
+        try {
+            // Get JocataClient instance
+            JocataClient jc = JocataClientHolder.get();
+
+            // Build request JSON
+            Map&lt;String, Object&gt; jsonPayload = buildNameScreeningRequest(request);
+            String jsonRequest = Json.write(jsonPayload);
+
+            log.info("Sending screening request: {}", request.getName());
+
+            // Send request (encryption handled internally)
+            String jsonResponse = jc.invoke("/apiscreening/v1", jsonRequest);
+
+            // Parse response
+            ScreeningResponse response = parseNameScreeningResponse(jsonResponse);
+
+            log.info("Screening completed. Match: {}", response.isMatch());
+
+            return response;
+
+        } catch (ApiException e) {
+            log.error("Jocata API error [{}]: {}", e.kind(), e.getMessage());
+            throw new ScreeningException("API call failed: " + e.getMessage(), e);
+
+        } catch (Exception e) {
+            log.error("Unexpected error during screening", e);
+            throw new ScreeningException("Screening failed: " + e.getMessage(), e);
+        }
+    }
+
+    private Map&lt;String, Object&gt; buildNameScreeningRequest(ScreeningRequest request) {
+        // Build party object
+        Map&lt;String, Object&gt; partyVO = new LinkedHashMap&lt;&gt;();
+        partyVO.put("name", request.getName().toUpperCase());
+
+        if (request.getDob() != null) {
+            partyVO.put("dob", formatDob(request.getDob()));
+        }
+
+        if (request.getNationality() != null) {
+            partyVO.put("nationality", request.getNationality());
+        }
+
+        if (request.getCountry() != null) {
+            partyVO.put("country", request.getCountry());
+        }
+
+        if (request.getPan() != null) {
+            partyVO.put("pan", request.getPan());
+        }
+
+        if (request.getAadhar() != null) {
+            partyVO.put("aadhar", request.getAadhar());
+        }
+
+        partyVO.put("customerId", request.getCustomerId());
+
+        // Build request list VO
+        Map&lt;String, Object&gt; requestListVO = new LinkedHashMap&lt;&gt;();
+        requestListVO.put("businessUnit", "RAMP");
+        requestListVO.put("subBusinessUnit", "API");
+        requestListVO.put("requestType", "API");
+        requestListVO.put("requestUuId", generateRequestId());
+        requestListVO.put("requestVOList", Collections.singletonList(partyVO));
+
+        // Build root request
+        Map&lt;String, Object&gt; rampRequest = new LinkedHashMap&lt;&gt;();
+        Map&lt;String, Object&gt; listMatching = new LinkedHashMap&lt;&gt;();
+        listMatching.put("requestListVO", requestListVO);
+        rampRequest.put("listMatchingPayload", listMatching);
+
+        Map&lt;String, Object&gt; root = new LinkedHashMap&lt;&gt;();
+        root.put("rampRequest", rampRequest);
+
+        return root;
+    }
+
+    private ScreeningResponse parseNameScreeningResponse(String jsonResponse) throws Exception {
+        Map&lt;String, Object&gt; responseMap = Json.parseObject(jsonResponse);
+        Map&lt;String, Object&gt; rampResponse = (Map) responseMap.get("rampResponse");
+
+        ScreeningResponse response = new ScreeningResponse();
+        response.setStatusCode((String) rampResponse.get("statusCode"));
+        response.setStatusMessage((String) rampResponse.get("statusMessage"));
+
+        // Check if successful
+        if (!"000".equals(response.getStatusCode())) {
+            response.setMatch(false);
+            return response;
+        }
+
+        // Parse response list
+        Map&lt;String, Object&gt; listMatching = (Map) rampResponse.get("listMatchingResponse");
+        if (listMatching == null) {
+            response.setMatch(false);
+            return response;
+        }
+
+        List&lt;Map&lt;String, Object&gt;&gt; responseList = (List) listMatching.get("responseListVO");
+        if (responseList == null || responseList.isEmpty()) {
+            response.setMatch(false);
+            return response;
+        }
+
+        Map&lt;String, Object&gt; first = responseList.get(0);
+        String matchFlag = (String) first.get("matchFlag");
+        response.setMatch("Y".equals(matchFlag));
+        response.setMatchCount((Integer) first.getOrDefault("matchCount", 0));
+        response.setMatches((List&lt;Map&lt;String, Object&gt;&gt;) first.get("matches"));
+
+        return response;
+    }
+
+    private String formatDob(String dob) {
+        // Convert DD/MM/YYYY to DDMMMYYYY
+        // This is just an example, adjust based on your format
+        return dob.replace("/", "");
+    }
+
+    private String generateRequestId() {
+        return "IBL-" + System.currentTimeMillis();
+    }
+}
+                </div>
+            </div>
+
+            <h3>Complete Transaction Screening Service</h3>
+
+            <button onclick="toggleCode(this)" class="tab-button">
+                Show Code
+            </button>
+
+            <div class="tab-content" style="display: none;">
+                <div class="code-block java">
+                    <span class="code-label">☕ Complete TransactionScreeningService.java</span>
+package com.api.exh.service.jocata;
+
+import com.fable.apiclient.Json;
+import com.fable.apiclient.jocata.JocataClient;
+import com.api.exh.integration.jocata.JocataClientHolder;
+import java.util.*;
+
+@Service
+@Slf4j
+public class TransactionScreeningService {
+
+    public TransactionScreeningResponse screenTransaction(
+            TransactionScreeningRequest request) throws Exception {
+
+        try {
+            JocataClient jc = JocataClientHolder.get();
+
+            // Build request
+            Map&lt;String, Object&gt; jsonPayload = buildTransactionScreeningRequest(request);
+            String jsonRequest = Json.write(jsonPayload);
+
+            log.info("Screening transaction: {}", request.getTransactionId());
+
+            // Send request
+            String jsonResponse = jc.invoke("/transactionscreening/v1", jsonRequest);
+
+            // Parse response
+            TransactionScreeningResponse response =
+                parseTransactionScreeningResponse(jsonResponse);
+
+            log.info("Transaction screening completed. Matches: {}", response.getTotalMatches());
+
+            return response;
+
+        } catch (Exception e) {
+            log.error("Transaction screening failed", e);
+            throw new ScreeningException("Transaction screening failed", e);
+        }
+    }
+
+    private Map&lt;String, Object&gt; buildTransactionScreeningRequest(
+            TransactionScreeningRequest request) {
+
+        // Build sender
+        Map&lt;String, Object&gt; senderVO = buildPartyVO(
+            request.getSenderName(),
+            "sender",
+            request.getSenderCustomerType(),
+            request.getSenderDob(),
+            request.getSenderNationality()
+        );
+
+        // Build receiver
+        Map&lt;String, Object&gt; receiverVO = buildPartyVO(
+            request.getReceiverName(),
+            "receiver",
+            request.getReceiverCustomerType(),
+            request.getReceiverDob(),
+            request.getReceiverNationality()
+        );
+
+        // Build request list VO
+        Map&lt;String, Object&gt; requestListVO = new LinkedHashMap&lt;&gt;();
+        requestListVO.put("businessUnit", "RAMP");
+        requestListVO.put("subBusinessUnit", "API");
+        requestListVO.put("requestType", "TSG");
+        requestListVO.put("tranId", request.getTransactionId());
+        requestListVO.put("accountNumber", request.getAccountNumber());
+        requestListVO.put("remarks", request.getRemarks());
+        requestListVO.put("requestVOList", Arrays.asList(senderVO, receiverVO));
+
+        // Build root
+        Map&lt;String, Object&gt; rampRequest = new LinkedHashMap&lt;&gt;();
+        Map&lt;String, Object&gt; listMatching = new LinkedHashMap&lt;&gt;();
+        listMatching.put("requestListVO", requestListVO);
+        rampRequest.put("listMatchingPayload", listMatching);
+
+        Map&lt;String, Object&gt; root = new LinkedHashMap&lt;&gt;();
+        root.put("rampRequest", rampRequest);
+
+        return root;
+    }
+
+    private Map&lt;String, Object&gt; buildPartyVO(String name, String type,
+            String customerType, String dob, String nationality) {
+
+        Map&lt;String, Object&gt; vo = new LinkedHashMap&lt;&gt;();
+        vo.put("name", name.toUpperCase());
+        vo.put("type", type);
+        vo.put("customerType", customerType);
+
+        if (dob != null) {
+            vo.put("dob", dob);
+        }
+
+        if (nationality != null) {
+            vo.put("nationality", nationality);
+        }
+
+        vo.put("customerId", UUID.randomUUID().toString());
+
+        return vo;
+    }
+
+    private TransactionScreeningResponse parseTransactionScreeningResponse(
+            String jsonResponse) throws Exception {
+
+        Map&lt;String, Object&gt; responseMap = Json.parseObject(jsonResponse);
+        Map&lt;String, Object&gt; rampResponse = (Map) responseMap.get("rampResponse");
+
+        TransactionScreeningResponse response = new TransactionScreeningResponse();
+        response.setStatusCode((String) rampResponse.get("statusCode"));
+        response.setStatusMessage((String) rampResponse.get("statusMessage"));
+
+        Map&lt;String, Object&gt; listMatching = (Map) rampResponse.get("listMatchingResponse");
+        if (listMatching != null) {
+            List&lt;Map&lt;String, Object&gt;&gt; responseList =
+                (List) listMatching.get("responseListVO");
+
+            if (responseList != null) {
+                response.setTotalMatches(responseList.size());
+                response.setResponses(responseList);
+            }
+        }
+
+        return response;
+    }
+}
+                </div>
+            </div>
+        </div>
+
+        <!-- CURL EXAMPLES -->
+        <div class="section" id="curl-examples">
+            <h2>🔧 cURL Examples for Testing</h2>
+
+            <h3>Name Screening cURL</h3>
+            <div class="code-block curl">
+                <span class="code-label">🔧 cURL - Name Screening</span>
+curl -X POST https://api.jocata.com/apiscreening/v1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -d '{
+    "rampRequest": {
+      "listMatchingPayload": {
+        "requestListVO": {
+          "businessUnit": "RAMP",
+          "subBusinessUnit": "API",
+          "requestType": "API",
+          "requestUuId": "IBL-TEST-001",
+          "requestVOList": [
+            {
+              "name": "ERIKA CSANYI",
+              "dob": "010169",
+              "nationality": "HUNGARIAN",
+              "country": "INDIA",
+              "customerId": "CUST-001"
+            }
+          ]
+        }
+      }
+    }
+  }'
+            </div>
+
+            <h3>Transaction Screening cURL</h3>
+            <div class="code-block curl">
+                <span class="code-label">🔧 cURL - Transaction Screening</span>
+curl -X POST https://api.jocata.com/transactionscreening/v1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -d '{
+    "rampRequest": {
+      "listMatchingPayload": {
+        "requestListVO": {
+          "businessUnit": "RAMP",
+          "subBusinessUnit": "API",
+          "requestType": "TSG",
+          "tranId": "TXN-90001",
+          "accountNumber": "ACC-12345",
+          "remarks": "outward remittance",
+          "requestVOList": [
+            {
+              "type": "sender",
+              "customerType": "I",
+              "name": "JOHN DOE",
+              "nationality": "USA",
+              "customerId": "SENDER-001"
+            },
+            {
+              "type": "receiver",
+              "customerType": "I",
+              "name": "RAJESH KUMAR",
+              "nationality": "INDIAN",
+              "customerId": "RECEIVER-001"
+            }
+          ]
+        }
+      }
+    }
+  }'
+            </div>
+
+            <h3>Health Check cURL</h3>
+            <div class="code-block curl">
+                <span class="code-label">🔧 cURL - Health Check</span>
+curl -X GET https://api.jocata.com/health \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+            </div>
+        </div>
+
+        <!-- ERROR HANDLING -->
+        <div class="section" id="error-handling">
+            <h2>⚠️ Error Handling & Response Codes</h2>
+
+            <h3>HTTP Status Codes</h3>
+            <table>
+                <tr>
+                    <th>Code</th>
+                    <th>Meaning</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td><strong>200</strong></td>
+                    <td>OK - Request successful</td>
+                    <td>Parse response normally</td>
+                </tr>
+                <tr>
+                    <td><strong>400</strong></td>
+                    <td>Bad Request - Invalid JSON format</td>
+                    <td>Check request JSON structure and fields</td>
+                </tr>
+                <tr>
+                    <td><strong>401</strong></td>
+                    <td>Unauthorized - Invalid credentials</td>
+                    <td>Check API token and authentication</td>
+                </tr>
+                <tr>
+                    <td><strong>403</strong></td>
+                    <td>Forbidden - Access denied</td>
+                    <td>Verify API key permissions</td>
+                </tr>
+                <tr>
+                    <td><strong>404</strong></td>
+                    <td>Not Found - Invalid endpoint</td>
+                    <td>Check API endpoint URL</td>
+                </tr>
+                <tr>
+                    <td><strong>500</strong></td>
+                    <td>Server Error - Gateway error</td>
+                    <td>Retry request, contact support if persists</td>
+                </tr>
+                <tr>
+                    <td><strong>503</strong></td>
+                    <td>Service Unavailable - API down</td>
+                    <td>Retry after some time</td>
+                </tr>
+            </table>
+
+            <h3>API Response Status Codes</h3>
+            <table>
+                <tr>
+                    <th>statusCode</th>
+                    <th>statusMessage</th>
+                    <th>Meaning</th>
+                </tr>
+                <tr>
+                    <td><strong>000</strong></td>
+                    <td>Success</td>
+                    <td>Request processed successfully, check matchFlag</td>
+                </tr>
+                <tr>
+                    <td><strong>001</strong></td>
+                    <td>Invalid Request</td>
+                    <td>Check JSON structure and required fields</td>
+                </tr>
+                <tr>
+                    <td><strong>002</strong></td>
+                    <td>Processing Error</td>
+                    <td>Screening engine error, retry later</td>
+                </tr>
+                <tr>
+                    <td><strong>003</strong></td>
+                    <td>Authentication Failed</td>
+                    <td>Check API credentials</td>
+                </tr>
+                <tr>
+                    <td><strong>004</strong></td>
+                    <td>Configuration Error</td>
+                    <td>Check api-client.properties configuration</td>
+                </tr>
+            </table>
+
+            <h3>Error Handling Implementation</h3>
+
+            <div class="code-block java">
+                <span class="code-label">☕ Comprehensive Error Handling</span>
+try {
+    String response = jc.invoke("/apiscreening/v1", jsonRequest);
+    ScreeningResponse result = parseResponse(response);
+
+    // Check API response status
+    if (!"000".equals(result.getStatusCode())) {
+        logger.error("API Error: {} - {}",
+            result.getStatusCode(),
+            result.getStatusMessage());
+        throw new ScreeningException(result.getStatusMessage());
+    }
+
+    // Check match result
+    if (result.isMatch()) {
+        logger.warn("MATCH FOUND: {}", result.getMatches());
+        // Handle match - escalate, block, etc.
+    } else {
+        logger.info("No match found");
+    }
+
+} catch (ApiException e) {
+    // Handle API exceptions
+    logger.error("API Exception [{}]: {}", e.kind(), e.getMessage());
+
+    switch (e.kind()) {
+        case "TimeoutException":
+            logger.error("Request timeout - retrying");
+            // Implement retry logic
+            break;
+        case "ConnectionException":
+            logger.error("Connection failed - check network/gateway");
+            break;
+        case "AuthenticationException":
+            logger.error("Authentication failed - check credentials");
+            break;
+        case "EncryptionException":
+            logger.error("Encryption error - check configuration");
+            break;
+        default:
+            logger.error("Unknown API error: {}", e.responseBody());
+    }
+
+    throw new ScreeningException("Screening failed", e);
+
+} catch (Exception e) {
+    logger.error("Unexpected error", e);
+    throw new ScreeningException("Unexpected error: " + e.getMessage(), e);
+}
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <p><strong>Jocata API - JSON Formats & Calling Methods</strong></p>
+            <p>Complete implementation guide for integration</p>
+            <p style="margin-top: 15px; font-style: italic;">
+                ℹ️ Always encrypt API credentials and sensitive data. Never log full request/response bodies in production.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleCode(button) {
+            const content = button.nextElementSibling;
+            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            button.textContent = content.style.display === 'none' ? 'Show Code' : 'Hide Code';
+        }
+
+        // Copy to clipboard functionality
+        document.querySelectorAll('.code-block').forEach(block => {
+            const button = document.createElement('button');
+            button.className = 'copy-button';
+            button.textContent = 'Copy';
+            button.onclick = function() {
+                const code = block.innerText.replace(/📄.*\n/, '');
+                navigator.clipboard.writeText(code);
+                button.textContent = 'Copied!';
+                setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+            };
+            block.style.position = 'relative';
+            block.appendChild(button);
+        });
+    </script>
+</body>
+</html>

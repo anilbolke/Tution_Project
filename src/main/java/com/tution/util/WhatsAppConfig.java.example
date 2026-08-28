@@ -1,0 +1,67 @@
+package com.tution.util;
+
+/**
+ * WhatsApp settings.
+ *
+ * Copy this file to WhatsAppConfig.java and fill in your own values —
+ * WhatsAppConfig.java is gitignored so real credentials never get committed.
+ *
+ * MODE = "LINK" (default): build a click-to-chat https://wa.me/ link with
+ * the message pre-filled — staff taps Send. Free, no API approval needed.
+ *
+ * MODE = "API": auto-send via the CPaaS WhatsApp API. Fill WABA_NUMBER
+ * + API_KEY (from your reseller panel) and set MODE = "API".
+ * Account gateway host = rcs.mmtpro.in. Endpoints/headers:
+ *   POST https://rcs.mmtpro.in/REST/directApi/message          (send)
+ *   POST https://rcs.mmtpro.in/REST/directApi/getTemplateList  (list approved templates)
+ *   headers: wabaNumber, Key, Content-Type: application/json
+ *
+ * NOTE: business-initiated messages may need a Meta-APPROVED template; the plain
+ * "text" body works inside the 24h customer-service window. For template sends,
+ * use the provider's "template" body (see the JSON doc) — easy to add later.
+ */
+public class WhatsAppConfig {
+
+    public static final String COUNTRY_CODE = "91";          // default for 10-digit numbers
+
+    /** "API" → auto-send approved templates; "LINK" → tap-to-send wa.me link only.
+     *  In "API" mode the system still falls back to the tap-to-send link whenever
+     *  WABA_NUMBER/API_KEY are blank or a send fails — so nothing breaks. */
+    public static final String MODE = "LINK";
+
+    // ── Meta-APPROVED templates (name + language per approved template) ──
+    public static final String TPL_INQUIRY        = "inquiry_stud";     public static final String LANG_INQUIRY        = "mr"; // {{1}} name {{2}} class (+ static Visit Website button)
+    public static final String TPL_ADMISSION      = "conf_admition";    public static final String LANG_ADMISSION      = "en"; // {{1}} name {{2}} adm.no {{3}} class {{4}} plan
+    public static final String TPL_PAYMENT        = "stud_fee_receipt"; public static final String LANG_PAYMENT        = "en"; // {{1}} name {{2}} rcpt {{3}} amt {{4}} date {{5}} mode {{6}} bal — HAS A DOCUMENT HEADER
+    public static final String TPL_INQUIRY_STAFF  = "inquiry_staff";    public static final String LANG_INQUIRY_STAFF  = "en"; // {{1}} date {{2}} name {{3}} class {{4}} stud.mob {{5}} parent.mob
+
+    /** Public base URL of the deployed app (e.g. "https://havellsson.com/Tution_Project"), used to
+     *  build the receipt-PDF link for the stud_fee_receipt document header. WhatsApp/mmtpro fetch
+     *  this URL server-side, so it MUST be publicly reachable — on localhost it won't deliver.
+     *  Blank → ReceiptServlet derives the URL from the request (works only if the server is public). */
+    public static final String PUBLIC_BASE_URL = "";
+
+    /** Institute WhatsApp number (with country code) for the public "Chat with us" button.
+     *  Replace with the real number. */
+    public static final String SUPPORT_NUMBER = "919876543210";
+
+    public static String supportLink() {
+        return "https://wa.me/" + SUPPORT_NUMBER
+             + "?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20admissions%20at%20Havellsson%20NEET%20Samrat.";
+    }
+
+    // CPaaS WhatsApp API — account gateway host rcs.mmtpro.in (only needed for MODE = "API")
+    public static final String API_BASE          = "https://rcs.mmtpro.in/REST/directApi";
+    public static final String API_URL           = API_BASE + "/message";
+    public static final String API_TEMPLATES_URL = API_BASE + "/getTemplateList";
+    public static final String WABA_NUMBER = ""; // WABA number (with 91)
+    public static final String API_KEY     = ""; // mmtpro API key
+
+    public static boolean isApi() {
+        return "API".equalsIgnoreCase(MODE)
+            && WABA_NUMBER != null && !WABA_NUMBER.isEmpty()
+            && API_KEY != null && !API_KEY.isEmpty();
+    }
+
+    private WhatsAppConfig() { }
+}

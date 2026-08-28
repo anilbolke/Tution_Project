@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuition Management System - Project Overview</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:0;
+    background:#f4f6f9;
+    color:#333;
+}
+
+.header{
+    background:#1f4e79;
+    color:white;
+    padding:30px;
+    text-align:center;
+}
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:8px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header .brand-banner{display:inline-block;height:50px;width:auto;background:#fff;border-radius:8px;padding:6px 16px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,0.25);}
+
+h1,h2,h3{
+    margin-top:0;
+}
+
+.module-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:15px;
+}
+
+.module{
+    background:#eef5ff;
+    border-left:5px solid #1f4e79;
+    padding:15px;
+    border-radius:5px;
+}
+
+.flow{
+    background:#fafafa;
+    padding:15px;
+    border-left:4px solid green;
+    font-family:monospace;
+    white-space:pre-line;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+table th{
+    background:#1f4e79;
+    color:white;
+}
+
+table th,
+table td{
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:left;
+}
+
+.footer{
+    text-align:center;
+    padding:20px;
+    background:#1f4e79;
+    color:white;
+}
+
+@media(max-width:768px){
+    .container{
+        width:95%;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+    <img class="brand-banner" src="data:image/webp;base64,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" alt="Havellsson" width="250" height="50">
+    <h1>Tuition Management System</h1>
+    <p>Project Overview Document</p>
+</div>
+
+<div class="container">
+
+```
+<div class="card">
+    <h2>Project Objective</h2>
+    <p>
+        The Tuition Management System is a centralized platform designed
+        to automate and manage tuition/coaching institute operations.
+        The system handles student admissions, slab-wise fee management,
+        attendance tracking, examinations, answer sheet scanning,
+        result generation, and reporting.
+    </p>
+</div>
+
+<div class="card">
+    <h2>Core Modules</h2>
+
+    <div class="module-grid">
+
+        <div class="module">
+            <h3>Admission Management</h3>
+            <ul>
+                <li>Student Registration</li>
+                <li>Document Upload</li>
+                <li>Batch Allocation</li>
+                <li>Admission Approval</li>
+            </ul>
+        </div>
+
+        <div class="module">
+            <h3>Slab Wise Fee Management</h3>
+            <ul>
+                <li>Fee Slab Configuration</li>
+                <li>Discount Management</li>
+                <li>Installments</li>
+                <li>Scholarship Support</li>
+            </ul>
+        </div>
+
+        <div class="module">
+            <h3>Payment Collection</h3>
+            <ul>
+                <li>Cash / UPI / Bank Transfer</li>
+                <li>Receipt Generation</li>
+                <li>Outstanding Tracking</li>
+                <li>Payment History</li>
+            </ul>
+        </div>
+
+        <div class="module">
+            <h3>Attendance</h3>
+            <ul>
+                <li>Daily Attendance</li>
+                <li>Batch Attendance</li>
+                <li>Attendance Reports</li>
+            </ul>
+        </div>
+
+        <div class="module">
+            <h3>Examination</h3>
+            <ul>
+                <li>Exam Creation</li>
+                <li>Marks Entry</li>
+                <li>Subject Management</li>
+            </ul>
+        </div>
+
+        <div class="module">
+            <h3>Answer Sheet Scanner</h3>
+            <ul>
+                <li>PDF Upload</li>
+                <li>Image Upload</li>
+                <li>OCR Processing</li>
+                <li>Student Mapping</li>
+            </ul>
+        </div>
+
+        <div class="module">
+            <h3>Result Generation</h3>
+            <ul>
+                <li>Percentage Calculation</li>
+                <li>Grade Calculation</li>
+                <li>Report Cards</li>
+                <li>Performance Analysis</li>
+            </ul>
+        </div>
+
+        <div class="module">
+            <h3>Reports & Dashboard</h3>
+            <ul>
+                <li>Admissions</li>
+                <li>Fee Collection</li>
+                <li>Attendance Reports</li>
+                <li>Result Analytics</li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<div class="card">
+    <h2>Admission Process Flow</h2>
+
+    <div class="flow">
+```
+
+Student Inquiry
+↓
+Registration
+↓
+Document Verification
+↓
+Admission Approval
+↓
+Batch Allocation
+↓
+Fee Slab Assignment
+↓
+Payment Collection </div> </div>
+
+```
+<div class="card">
+    <h2>Fee Slab Example</h2>
+
+    <table>
+        <tr>
+            <th>Slab</th>
+            <th>Criteria</th>
+            <th>Fee Amount</th>
+        </tr>
+        <tr>
+            <td>Early Bird</td>
+            <td>Before May</td>
+            <td>₹15,000</td>
+        </tr>
+        <tr>
+            <td>Regular</td>
+            <td>June - July</td>
+            <td>₹18,000</td>
+        </tr>
+        <tr>
+            <td>Late Admission</td>
+            <td>After July</td>
+            <td>₹20,000</td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Technology Stack</h2>
+
+    <table>
+        <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+        </tr>
+        <tr>
+            <td>Frontend</td>
+            <td>ReactJS, HTML5, Bootstrap 5</td>
+        </tr>
+        <tr>
+            <td>Backend</td>
+            <td>Java 17, Spring Boot</td>
+        </tr>
+        <tr>
+            <td>Database</td>
+            <td>MySQL 8</td>
+        </tr>
+        <tr>
+            <td>Storage</td>
+            <td>MinIO</td>
+        </tr>
+        <tr>
+            <td>OCR Engine</td>
+            <td>Tesseract OCR, OpenCV</td>
+        </tr>
+        <tr>
+            <td>Reports</td>
+            <td>JasperReports</td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Future Enhancements</h2>
+
+    <ul>
+        <li>Parent Portal</li>
+        <li>Student Mobile App</li>
+        <li>WhatsApp Integration</li>
+        <li>Online Exams</li>
+        <li>QR Code Student ID Cards</li>
+        <li>AI Performance Analytics</li>
+        <li>Face Recognition Attendance</li>
+    </ul>
+</div>
+```
+
+</div>
+
+<div class="footer">
+    © 2026 Tuition Management System | Project Overview
+</div>
+
+</body>
+</html>

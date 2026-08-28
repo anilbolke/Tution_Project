@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Havellsson TMS — Module &amp; Activity Mapping</title>
+<style>
+  :root{
+    --green:#0E5C3F; --green-dark:#093D2A; --green-light:#E8F4EE;
+    --amber:#9A6B00; --amber-bg:#FFF6E0;
+    --red:#C0392B; --red-bg:#FDEDEB;
+    --ok:#1E7E34; --ok-bg:#E8F4EE;
+    --ink:#1F2933; --muted:#6B7280; --line:#E2E8F0; --card:#FFFFFF; --page:#F4F7F5;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:var(--page);color:var(--ink);line-height:1.55;}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px;}
+
+  .doc-head{background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;border-radius:14px;padding:28px 32px;margin-bottom:26px;}
+  .doc-head .brand-strip{margin-bottom:16px;}
+  .doc-head .brand-strip img{display:block;height:50px;width:auto;background:#fff;border-radius:8px;padding:6px 16px;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .doc-head h1{font-size:26px;margin-bottom:6px;}
+  .doc-head p{opacity:.92;font-size:14px;}
+  .doc-head .meta{margin-top:12px;font-size:12.5px;opacity:.85;}
+  .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;}
+  .badges span{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:20px;font-size:12px;}
+
+  h2.sec{font-size:19px;color:var(--green-dark);margin:34px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--green);}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07);font-size:13.5px;}
+  th{background:var(--green);color:#fff;text-align:left;padding:9px 12px;font-size:12.5px;letter-spacing:.3px;}
+  td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+
+  .st{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .st.ok{background:var(--ok-bg);color:var(--ok);}
+  .st.part{background:var(--amber-bg);color:var(--amber);}
+  .st.plan{background:var(--red-bg);color:var(--red);}
+
+  .module{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--green);border-radius:10px;margin:18px 0;padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .module.partial{border-left-color:var(--amber);}
+  .module.planned{border-left-color:var(--red);}
+  .module h3{font-size:16.5px;color:var(--green-dark);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .module h3 .num{background:var(--green);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none;}
+  .module .desc{font-size:13px;color:var(--muted);margin:6px 0 12px;}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:760px){.cols{grid-template-columns:1fr;}}
+  .col h4{font-size:12.5px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding:5px 10px;border-radius:6px;}
+  .col.now h4{background:var(--ok-bg);color:var(--ok);}
+  .col.next h4{background:var(--red-bg);color:var(--red);}
+  .col ul{list-style:none;}
+  .col li{font-size:13px;padding:4px 0 4px 22px;position:relative;border-bottom:1px dashed var(--line);}
+  .col li:last-child{border-bottom:none;}
+  .col.now li::before{content:"✅";position:absolute;left:0;font-size:11px;top:6px;}
+  .col.next li::before{content:"🔜";position:absolute;left:0;font-size:11px;top:6px;}
+  .ref{color:var(--muted);font-size:11.5px;}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:12.5px;}
+  .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:14px;}
+
+  @media print{
+    body{background:#fff;}
+    .doc-head{border-radius:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .module{break-inside:avoid;box-shadow:none;}
+    table{box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="doc-head">
+    <div class="brand-strip"><img src="data:image/webp;base64,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" alt="Havellsson" width="250" height="50"></div>
+    <h1>Havellsson NEET Samrat — Tuition Management System</h1>
+    <p>Module &amp; Activity Mapping — Current Implementation vs. Future Roadmap</p>
+    <div class="meta">Prepared: 12 July 2026 &nbsp;•&nbsp; Updated: 9 August 2026 (Scholarship Exam Module — HAMSE/HACKSE) &nbsp;•&nbsp; Source: application codebase (JSP / Servlet / MySQL 8 / Tomcat 9)</div>
+    <div class="badges">
+      <span>Java EE Servlets (MVC)</span><span>JSP + CSS3</span><span>MySQL 8.x</span>
+      <span>Razorpay</span><span>Local OMR Engine</span><span>Scholarship Exam (HOSE)</span><span>WhatsApp API</span><span>SHA-256 Auth</span>
+    </div>
+  </div>
+
+  <!-- ================= SALES MODULE ================= -->
+  <h2 class="sec">1. Sales Module — Delivered August 2026</h2>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:12px;">
+    Built against the two requirement documents supplied by the client
+    (<i>Global Search &amp; New Enquiry/Lead Creation</i> and <i>Student Admission Sales Management</i>).
+    The complete sales cycle — enquiry → follow-up → demo → admission → fee collection — is now live.
+  </p>
+  <table>
+    <tr><th style="width:210px;">Requirement</th><th style="width:110px;">Status</th><th>What was delivered</th></tr>
+    <tr><td><b>Global Search</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>One box searching leads <i>and</i> admitted students together by student mobile, parent mobile, name or admission number. No match offers “Create New Enquiry” pre-filled with what was typed.</td></tr>
+    <tr><td><b>Lead Management</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Full 30-field enquiry form, 9-stage pipeline, Hot/Warm/Cold priority, counsellor ownership, lead-source master, duplicate-mobile warning, duplicate-admission guard.</td></tr>
+    <tr><td><b>Follow-up Management</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Counselling history per lead (call / WhatsApp / email / visit), objection notes, next-action dates, and a daily work queue of Overdue / Due Today / Next 7 Days.</td></tr>
+    <tr><td><b>Demo Scheduling</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Book demos with date, time, faculty, subject and mode; record attendance outcome, feedback and a 1–5 rating. Past demos with no outcome are surfaced separately.</td></tr>
+    <tr><td><b>Admission Conversion</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>One click from lead to admission with the whole record pre-filled; ID-proof upload; batch allocation; the admission is credited to the lead’s counsellor and linked both ways for reporting.</td></tr>
+    <tr><td><b>Fee Collection</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Per-student fee ledger with discount and scholarship, installment/EMI schedules with due dates, payments auto-allocated oldest-first, itemised receipt (PDF + WhatsApp), overdue tracking.</td></tr>
+    <tr><td><b>Sales Dashboards</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Counsellor dashboard (own pipeline, work due, month-to-date conversion) and a management sales strip plus counsellor leaderboard.</td></tr>
+    <tr><td><b>Automation</b></td><td><span class="st part">READY</span></td>
+        <td>Reminder engine and daily scheduler are built and running; follow-up, demo and fee-due queues are live and can be sent today. Unattended auto-send switches on once the three WhatsApp templates are approved by Meta.</td></tr>
+    <tr><td><b>Reports</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>All 8 requested reports with date ranges and one-click Excel export: lead source, counsellor performance, conversion funnel, lost-lead analysis, course-wise admissions, collection register, pending fees with 30/60/90 ageing, discount register.</td></tr>
+  </table>
+
+  <!-- ================= SCHOLARSHIP EXAM MODULE ================= -->
+  <h2 class="sec">2. Scholarship Exam Module (HOSE) — Delivered August 2026</h2>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:12px;">
+    Built for the offline scholarship exams — <b>HAMSE</b> and <b>HACKSE</b> — sat on the
+    institute’s 60-question OMR sheet. A school sends its student list as a spreadsheet; the system
+    registers every student, issues roll numbers, reads the scanned answer sheets, scores them,
+    works out the scholarship each student has earned, and hands them back to the counsellors as
+    live leads. Each exam is separate, with its own paper, answer keys and roll-number block.
+  </p>
+  <table>
+    <tr><th style="width:210px;">Stage</th><th style="width:110px;">Status</th><th>What was delivered</th></tr>
+    <tr><td><b>School list upload</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>The institute’s own 49-column lead template is read directly — no re-typing. Every upload is
+            <i>previewed before anything is saved</i>, showing exactly how many students are new, how many
+            already exist, and which rows were rejected and why. Rejected rows download as a spreadsheet
+            the school can correct and re-send. A student listed twice, or already on file from another
+            school, stays one person.</td></tr>
+    <tr><td><b>Roll numbers</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Six digits, generated automatically, never reused. The last digit is a <b>check digit</b>:
+            the roll number is the only machine-readable mark on the sheet, so a single misread bubble
+            would otherwise hand one child’s marks to another. The check digit turns that into a visible
+            “review this sheet” instead. Roll numbers issued to a school already exist on their hall
+            tickets, so a block can be widened but never moved out from under them.</td></tr>
+    <tr><td><b>Roll list &amp; hall tickets</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Printable invigilator roll list with a signature column and present/absent footer, and one
+            hall ticket per candidate carrying the roll number, centre, date, photo box and the exam
+            instructions — including that marking is <b>+4 / −1</b>, so guessing costs marks.</td></tr>
+    <tr><td><b>Exam setup</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Per exam: the answer-sheet layout, number of questions, marking scheme, roll-number block,
+            the <b>subject split you choose yourself</b> (e.g. 1–10 one subject, 11–30 the next), and
+            <b>four answer keys</b>, one per booklet A–D. The screen refuses a split that leaves a
+            question in no subject or in two, and refuses a partial answer key — both would quietly
+            mis-score every candidate. A checklist shows what still stands between the exam and scanning.</td></tr>
+    <tr><td><b>OMR sheet reading</b></td><td><span class="st part">CALIBRATION PENDING</span></td>
+        <td>Reads the 60-question sheet: all answers, the 6-digit roll number, the booklet code, board
+            and exam name. Both edges of the page are used to straighten a crooked scan rather than
+            merely tolerate it. Built and tested end-to-end; <b>thresholds must still be tuned against
+            about 20 real filled sheets</b> before the first live exam — see the note below.</td></tr>
+    <tr><td><b>Scanning &amp; scoring</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Upload a batch of scanned sheets and each is scored against the answer key for the booklet
+            <i>that student actually bubbled</i>. Nothing is ever guessed: a sheet with no readable roll,
+            a failed check digit, a roll not in this exam, a duplicate, or a blank booklet bubble goes to
+            a <b>review queue</b> with its scanned image attached, to be identified by hand. Candidates
+            with no sheet at all are marked absent.</td></tr>
+    <tr><td><b>Scholarship calculation</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>The full brochure scheme. HAMSE awards a scholarship <b>equal to</b> the score percentage,
+            HACKSE <b>90% of it</b>, capped at 100% and 90%. Also covers school exam score, extraordinary
+            performance, previous NEET score, and the non-academic categories (ex-student, single parent,
+            sibling, defence, police, martyr) — 24 rules in all. Per the brochure, a student receives
+            <b>the single highest route they qualify for, never the sum</b>, and non-exam claims count
+            only once their proof has been verified. The winning rule is recorded, so every figure can
+            be explained.</td></tr>
+    <tr><td><b>Results &amp; exports</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Ranked result list with subject-wise marks, percentage and scholarship; a printable
+            <b>PDF result slip</b> per candidate; and an Excel export in the institute’s own 49-column
+            template, so results drop straight back into the sheet the schools already use.</td></tr>
+    <tr><td><b>Hand-off to counsellors</b></td><td><span class="st ok">DELIVERED</span></td>
+        <td>Publishing results moves every candidate into the existing sales pipeline at a new
+            <b>Result Declared</b> stage, carrying their scholarship percentage. The counsellor’s normal
+            follow-up and admission flow picks them up unchanged, and the concession is ready for the fee
+            plan. Students already admitted are deliberately left untouched, so a fee ledger already
+            agreed is never rewritten.</td></tr>
+    <tr><td><b>Result message to parents</b></td><td><span class="st part">READY — MANUAL</span></td>
+        <td>Composes the result and scholarship message per candidate and sends it over WhatsApp on an
+            approved template. Held at <b>manual send</b> at the institute’s request — the button
+            currently previews the exact message instead of sending. Switching to automatic sending is a
+            single setting.</td></tr>
+  </table>
+  <p style="font-size:13px;color:var(--muted);margin:10px 0 0;padding:10px 12px;border-left:3px solid #d9a441;background:#fffaf0;">
+    <b>Before the first live exam:</b> the sheet reader has been built and proven against generated
+    sheets, but not yet against real scanned paper. Please provide about <b>20 filled sheets</b>
+    covering light and heavy shading, pencil and both pen colours, an erased-and-changed answer, a
+    deliberate double mark, a blank sheet, a crooked feed and a photocopy. The reader is tuned against
+    those before it is trusted with a real cohort’s marks.
+  </p>
+
+  <!-- ================= ROLES ================= -->
+  <h2 class="sec">3. User Roles &amp; Access Control</h2>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:12px;">
+    Each of the four roles signs in to its own workspace. The menu shows only what that role
+    is meant to use, and the same rules are enforced on the server — so a typed URL, a stale
+    bookmark or a shared link cannot reach a screen the menu withholds.
+  </p>
+  <table>
+    <tr>
+      <th style="width:130px;">Role</th>
+      <th style="width:150px;">Signs in to</th>
+      <th>Can access</th>
+      <th style="width:210px;">Cannot access</th>
+    </tr>
+    <tr>
+      <td><b>Admin</b><br><span class="ref">Owner / Director</span></td>
+      <td>Institute Dashboard</td>
+      <td>Everything — institute dashboard with the sales strip and counsellor leaderboard,
+          all sales screens, fees and concessions, reports, and every academic module.</td>
+      <td><span class="ref">Nothing restricted</span></td>
+    </tr>
+    <tr>
+      <td><b>Office Staff</b><br><span class="ref">Front desk, back office, accounts</span></td>
+      <td>Institute Dashboard</td>
+      <td>All day-to-day operations — enquiries, follow-ups, demos, admissions, fee collection,
+          receipts, sales reports, attendance, exams, materials, OMR and tickets. Takes exam
+          fees at the counter, including a school paying for a batch, and prints receipts.</td>
+      <td>Granting discounts &amp; scholarships; deactivating a student; the counsellor's own
+          sales dashboard. <b>Setting an exam's fee, waiving one, or giving a candidate their
+          own amount</b> — taking a payment is front-desk work, pricing it is not. The expense
+          fund, vendors, work orders, expenses and the four finance reports.</td>
+    </tr>
+    <tr>
+      <td><b>Counsellor</b><br><span class="ref">Admissions / sales</span></td>
+      <td>My Dashboard <span class="ref">(own pipeline)</span></td>
+      <td>Own leads only, follow-ups, demos, reminders for own students, global search, student
+          records and fee status. Own month-to-date performance.</td>
+      <td>Institute dashboard, management reports, attendance, exams, materials, OMR, tickets,
+          the whole finance module (fund, vendors, work orders, expenses, exam fees),
+          and any other counsellor's leads or figures.</td>
+    </tr>
+    <tr>
+      <td><b>Teacher</b><br><span class="ref">Faculty</span></td>
+      <td>Attendance</td>
+      <td>Attendance marking &amp; reports, student records, exams &amp; marks, learning
+          materials, OMR scanning, support tickets.</td>
+      <td>All fee and payment screens, the entire finance module, the sales pipeline,
+          admissions, management reports and the institute dashboard.</td>
+    </tr>
+  </table>
+
+  <div class="module" style="margin-top:18px;">
+    <h3><span class="num">🔒</span> How the restrictions are applied</h3>
+    <p class="desc">Two layers, so hiding a menu item is never the only thing stopping access.</p>
+    <div class="cols">
+      <div class="col now"><h4>What the user sees</h4>
+        <ul>
+          <li>One shared menu that renders per role — no screen is offered that the role cannot open</li>
+          <li>Each role lands on its own home page at sign-in; the logo returns there</li>
+          <li>Mobile bottom tabs follow the same rules as the desktop menu</li>
+          <li>Sensitive panels are withheld within a shared page — a teacher opening a student record
+              sees the academic details but not the payment history, fee balance or source enquiry</li>
+        </ul>
+      </div>
+      <div class="col now"><h4>What the server enforces</h4>
+        <ul>
+          <li>Every request is checked against the signed-in role before the page is built
+              <span class="ref">(AuthFilter)</span></li>
+          <li>A restricted address redirects the user to their own home page rather than failing</li>
+          <li>Counsellors are scoped at the database level — lead lists, search, demos and the
+              reminder queue return only their own records</li>
+          <li>Editing another counsellor's lead, or opening it by changing the web address,
+              is refused outright</li>
+          <li>Discounts, scholarships and student deactivation are restricted to Admin on submit,
+              not merely hidden</li>
+          <li>The same applies inside a shared screen: office staff can take an exam fee but the
+              actions that decide what is owed — setting the exam fee, waiving one, setting a
+              candidate's own amount — are refused on submit, not just left off the page</li>
+          <li>The finance reports carry the same lock as the finance screens, so a report cannot
+              be used to read figures the screen withholds — the export route is locked too</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUMMARY ================= -->
+  <h2 class="sec">4. Module Coverage Summary</h2>
+  <div class="legend">
+    <span><span class="st ok">AVAILABLE</span> Fully working today</span>
+    <span><span class="st part">PARTIAL</span> Core exists, enhancements pending</span>
+    <span><span class="st plan">FUTURE</span> Not started — planned</span>
+  </div>
+  <table>
+    <tr><th style="width:34px;">#</th><th>Module</th><th style="width:110px;">Status</th><th>Current Coverage in One Line</th></tr>
+    <tr><td>1</td><td><b>Website</b></td><td><span class="st part">PARTIAL</span></td><td>Public inquiry form with T&amp;C exists; full marketing website is pending.</td></tr>
+    <tr><td>2</td><td><b>Front Desk</b></td><td><span class="st ok">AVAILABLE</span></td><td>Global search, full lead pipeline, counselling follow-ups, demo scheduling &amp; one-click conversion.</td></tr>
+    <tr><td>3</td><td><b>Office Staff</b></td><td><span class="st part">PARTIAL</span></td><td>STAFF role login works across all operational modules; staff HR features pending.</td></tr>
+    <tr><td>4</td><td><b>Accountant</b></td><td><span class="st ok">AVAILABLE</span></td><td>Fee ledger, installments, receipts, ageing &amp; reminders, plus the finance module: exam fee collection by roll number, expense fund, vendors, work orders and expenses tracked to the work order they pay.</td></tr>
+    <tr><td>5</td><td><b>Back Office</b></td><td><span class="st part">PARTIAL</span></td><td>Student master, materials, OMR processing done; masters/setup screens pending.</td></tr>
+    <tr><td>6</td><td><b>Students Portal</b></td><td><span class="st ok">AVAILABLE</span></td><td>Mobile-friendly portal: attendance, study PDFs, videos, support tickets.</td></tr>
+    <tr><td>7</td><td><b>Online Exam</b></td><td><span class="st part">PARTIAL</span></td><td>Exam setup, marks, ranks, report cards, OMR scoring and the full scholarship-exam cycle (HAMSE/HACKSE) done; live in-browser MCQ exam pending.</td></tr>
+    <tr><td>8</td><td><b>Teacher Portal</b></td><td><span class="st plan">FUTURE</span></td><td>TEACHER role exists in DB; dedicated teacher screens not built yet.</td></tr>
+    <tr><td>9</td><td><b>Admin Portal</b></td><td><span class="st ok">AVAILABLE</span></td><td>Live-stats dashboard, sales strip &amp; counsellor leaderboard; user-management UI pending.</td></tr>
+    <tr><td>10</td><td><b>Reporting</b></td><td><span class="st ok">AVAILABLE</span></td><td>13 reports with Excel export (9 sales + 4 finance), plus attendance, results, fee summary, receipts &amp; OMR export.</td></tr>
+    <tr><td>11</td><td><b>Multi Branch Compatible</b></td><td><span class="st plan">FUTURE</span></td><td>Single-institute today; branch dimension to be added across all tables/screens.</td></tr>
+    <tr><td>12</td><td><b>Biometric Attendance Integration</b></td><td><span class="st plan">FUTURE</span></td><td>Attendance is manual today; device (eSSL/ZKTeco) sync planned.</td></tr>
+  </table>
+
+  <!-- ================= DETAIL ================= -->
+  <h2 class="sec">5. Module-wise Activity Mapping</h2>
+
+  <!-- 1 WEBSITE -->
+  <div class="module partial">
+    <h3><span class="num">1</span> Website <span class="st part">PARTIAL</span></h3>
+    <p class="desc">Public-facing pages for lead generation and institute branding.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Public inquiry form — no login needed <span class="ref">(inquiry.jsp → InquiryServlet)</span></li>
+          <li>Lead capture: name, mobile, email, class interest, source, message</li>
+          <li>Terms &amp; Conditions acceptance on inquiry</li>
+          <li>Branded theme &amp; ribbon ("Havellsson NEET Samrat") on all public pages</li>
+          <li>Links from public page to Staff and Student logins</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Full public website: Home, About, Courses, Faculty, Toppers/Results, Gallery, Contact</li>
+          <li>Online admission application with document upload</li>
+          <li>Announcements / news &amp; events section</li>
+          <li>SEO, Google Maps &amp; WhatsApp click-to-chat</li>
+          <li>Fee-plan display and downloadable brochure</li>
+          <li>Testimonials &amp; NEET result showcase</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 FRONT DESK -->
+  <div class="module">
+    <h3><span class="num">2</span> Front Desk <span class="st ok">AVAILABLE</span></h3>
+    <p class="desc">Reception activities — inquiries, walk-ins, admissions.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li><b>Global search</b> across leads and admitted students — mobile, parent mobile, name or admission no <span class="ref">(GlobalSearchServlet)</span></li>
+          <li>Server-side lead list with filters: status, priority, source, counsellor, date range, overdue <span class="ref">(InquiryListServlet)</span></li>
+          <li>9-stage pipeline: NEW → CONTACTED → INTERESTED → DEMO PENDING → DEMO COMPLETED → FOLLOW-UP REQUIRED → CONVERTED / NOT INTERESTED / LOST</li>
+          <li>Full 30-field enquiry form with Hot/Warm/Cold priority &amp; counsellor assignment <span class="ref">(LeadServlet)</span></li>
+          <li>Duplicate-enquiry warning on mobile; duplicate-admission guard naming the clashing student</li>
+          <li>Counselling follow-up history with objection notes <span class="ref">(FollowupServlet)</span></li>
+          <li>Follow-up work queue: Overdue / Due Today / Next 7 Days</li>
+          <li>Demo scheduling with faculty, subject, mode, feedback &amp; rating <span class="ref">(DemoServlet)</span></li>
+          <li>Lead source tracking (Friend, Social Media, Walk-in, Newspaper…)</li>
+          <li>One-click "Convert" from inquiry to admission form</li>
+          <li>Full admission form: personal, previous education, contacts, parent details <span class="ref">(admission.jsp → AdmissionServlet)</span></li>
+          <li>Student photo upload &amp; auto admission-number generation</li>
+          <li>Fee slab selection with live payment schedule preview</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Visitor / gate register and call log</li>
+          <li>Bulk SMS/WhatsApp broadcast to open inquiries</li>
+          <li>Student ID-card generation &amp; printing</li>
+          <li>Lead import from website forms / ad campaigns</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 OFFICE STAFF -->
+  <div class="module partial">
+    <h3><span class="num">3</span> Office Staff <span class="st part">PARTIAL</span></h3>
+    <p class="desc">Day-to-day operations performed by institute staff.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Staff login with session auth &amp; SHA-256 passwords <span class="ref">(LoginServlet)</span></li>
+          <li><b>Role-based menus &amp; access</b> — each role sees only its own modules, enforced on the server too <span class="ref">(see section 2)</span></li>
+          <li>Four roles: ADMIN / STAFF / TEACHER / COUNSELLOR, each with its own landing page <span class="ref">(users table)</span></li>
+          <li>Daily student attendance marking: Present / Absent / Late / Leave <span class="ref">(AttendanceServlet)</span></li>
+          <li>"Mark all Present" quick action, one row per student per day (duplicate-safe)</li>
+          <li>Learning material upload: PDF notes + YouTube e-content <span class="ref">(MaterialServlet)</span></li>
+          <li>Support-ticket handling with threaded replies &amp; status updates <span class="ref">(TicketAdminServlet)</span></li>
+          <li>"Collected by / marked by / uploaded by" captured on every action</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Staff master (designation, joining date, salary info, documents)</li>
+          <li>Staff attendance &amp; leave management</li>
+          <li>Task assignment &amp; daily activity log</li>
+          <li>Internal notice board / circulars</li>
+          <li>Staff performance &amp; activity reports</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 ACCOUNTANT -->
+  <div class="module partial">
+    <h3><span class="num">4</span> Accountant <span class="st part">PARTIAL</span></h3>
+    <p class="desc">Fee billing, collection, receipts and financial tracking.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li><b>Per-student fee ledger</b>: course fee, registration, material, discount, scholarship, net payable <span class="ref">(student_fees)</span></li>
+          <li><b>Instalment / EMI schedules</b> with due dates; payments auto-applied oldest-first <span class="ref">(fee_installments)</span></li>
+          <li>Discount &amp; scholarship with approver and reason recorded for audit</li>
+          <li>Automatic overdue flagging &amp; 30/60/90-day ageing</li>
+          <li>Itemised receipt showing every fee component and concession</li>
+          <li>Transaction reference captured per mode (cheque no / UPI ref / UTR)</li>
+          <li>Fee-due reminder queue over WhatsApp <span class="ref">(ReminderService)</span></li>
+          <li>Fee slabs: Monthly / Quarterly / Half-Yearly / Yearly with per-month rates <span class="ref">(fee_slabs)</span></li>
+          <li>Fee dashboard: Total Billed, Collected, Outstanding per student &amp; institute-wide <span class="ref">(FeeListServlet)</span></li>
+          <li>PAID / PARTIAL / PENDING status filter &amp; search</li>
+          <li>Manual collection: Cash, UPI, Bank Transfer, Card, Cheque <span class="ref">(CollectPaymentServlet)</span></li>
+          <li>Online payment via Razorpay checkout + signature verification <span class="ref">(PayOnlineServlet / PayVerifyServlet)</span></li>
+          <li>Auto receipt numbering &amp; printable receipt; PDF receipt generation <span class="ref">(ReceiptServlet, ReceiptPdf)</span></li>
+          <li>Receipt shared to parent via WhatsApp <span class="ref">(WhatsAppService)</span></li>
+          <li>Per-student payment history with mode, date &amp; collector</li>
+          <li>Today's collection &amp; outstanding tiles on dashboard</li>
+        </ul>
+        <h4 style="margin-top:14px">Finance Module — added August 2026</h4>
+        <ul>
+          <li><b>Exam fee collection by roll number</b>: type the roll from the hall ticket,
+              see the candidate and their balance, take the payment, print the receipt
+              <span class="ref">(/exam-fees, EXM- receipt series)</span></li>
+          <li><b>Fully-paid tracking per candidate</b>: Paid / Part paid / Unpaid / Waived /
+              No fee set, worked out from the fee and the receipts rather than stored, so it
+              always matches the money actually taken</li>
+          <li><b>One school payment split across many candidates</b> in a single transaction —
+              allocated in roll order, one school receipt plus a receipt per child
+              <span class="ref">(school_receipts, SCH- series)</span></li>
+          <li>Per-candidate <b>waivers and own amounts</b>, with the reason recorded; neither can
+              be applied over money already taken</li>
+          <li><b>Expense fund</b>: credited by top-up, debited by every expense, with a running
+              statement and reversals kept visible <span class="ref">(/fund)</span></li>
+          <li><b>Vendor register</b>: contact, GSTIN/PAN, bank details, and each vendor's ordered
+              / paid / outstanding position <span class="ref">(/vendors)</span></li>
+          <li><b>Work orders</b> per vendor with an approval step — nothing can be paid against a
+              draft — plus a work-order PDF to send the vendor
+              <span class="ref">(/work-orders, WO- series)</span></li>
+          <li><b>Expenses record which vendor and which work order</b> they settle. An expense
+              cannot exceed what the order has left, and cannot be booked against another
+              vendor's order <span class="ref">(/expenses, EXP- voucher series)</span></li>
+          <li>Every expense <b>debits the fund in the same transaction</b>; cancelling a voucher
+              credits it back and both entries stay on the statement</li>
+          <li>4 finance reports with Excel export: Exam Fee Collection, Expense Register,
+              Vendor Outstanding, Fund Statement</li>
+          <li>Finance strip on the admin dashboard: fund balance, spent this month, owed to
+              vendors, exam fees collected &amp; due</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Refunds &amp; cheque-bounce handling</li>
+          <li>GST-compliant invoices &amp; financial-year closing</li>
+          <li>Bank reconciliation &amp; settlement report for Razorpay</li>
+          <li>Multi-level concession approval workflow (currently admin-only)</li>
+          <li>Bill / invoice scan upload against each expense voucher</li>
+          <li>Exam fee income transferring into the expense fund (kept as separate books today)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 BACK OFFICE -->
+  <div class="module partial">
+    <h3><span class="num">5</span> Back Office <span class="st part">PARTIAL</span></h3>
+    <p class="desc">Records management, masters, content and academic processing.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Student master with full profile, photo &amp; search <span class="ref">(StudentListServlet)</span></li>
+          <li>Learning-material repository by class &amp; subject (PDF/Video)</li>
+          <li>OMR sheet processing: upload scan → auto-read bubbles → score, entirely on your own server <span class="ref">(OmrScanServlet + OmrService)</span></li>
+          <li>OMR results: attempted/blank/ambiguous/correct/wrong counts, answer grid</li>
+          <li>OMR export to CSV / Excel <span class="ref">(OmrExportServlet, XlsxWriter)</span></li>
+          <li>PDF-to-JPEG extraction utility for scanned sheets <span class="ref">(PdfJpegExtractor)</span></li>
+          <li>UTF-8 handling across app <span class="ref">(CharacterEncodingFilter)</span></li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Masters screens: classes/batches, subjects, sessions, fee-slab editor</li>
+          <li>Batch &amp; timetable management</li>
+          <li>Student edit / deactivate / transfer-certificate generation</li>
+          <li>Bulk import/export of students (Excel)</li>
+          <li>Document management (certificates, marksheets) per student</li>
+          <li>Audit log of all create/update/delete actions</li>
+          <li>Automated database backup &amp; restore</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 STUDENTS PORTAL -->
+  <div class="module">
+    <h3><span class="num">6</span> Students Portal <span class="st ok">AVAILABLE</span></h3>
+    <p class="desc">Self-service portal for students — mobile-first design.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Student login using Admission No + registered mobile <span class="ref">(StudentLoginServlet)</span></li>
+          <li>Personal dashboard with admission no &amp; class chips <span class="ref">(student-dashboard.jsp)</span></li>
+          <li>My Attendance: day-wise record, P/A/Late/Leave counts &amp; percentage <span class="ref">(StudentAttendanceServlet)</span></li>
+          <li>Study Material: class-filtered PDF downloads <span class="ref">(StudentResourcesServlet)</span></li>
+          <li>E-Content: YouTube lecture videos, subject filter</li>
+          <li>Raise support tickets: category, priority, subject, message <span class="ref">(StudentTicketServlet)</span></li>
+          <li>Ticket thread view — see staff replies &amp; status</li>
+          <li>Mobile bottom tab-bar navigation (app-like experience)</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>My Fees: dues view + online payment by student/parent (Razorpay)</li>
+          <li>My Results: exam marks, rank &amp; downloadable report card</li>
+          <li>Class timetable &amp; exam schedule</li>
+          <li>Notifications / announcements feed</li>
+          <li>Profile view &amp; correction request</li>
+          <li>Homework / assignment submission</li>
+          <li>Parent login with child overview</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 ONLINE EXAM -->
+  <div class="module partial">
+    <h3><span class="num">7</span> Online Exam <span class="st part">PARTIAL</span></h3>
+    <p class="desc">Examination lifecycle — internal class tests, plus the complete offline scholarship exam
+      (HAMSE / HACKSE) from school list to published result. A live in-browser test engine is the future step.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Exam creation: name, class, date, subjects (CSV), max marks per subject <span class="ref">(ExamCreateServlet)</span></li>
+          <li>Grid-based subject-wise marks entry with live total &amp; % <span class="ref">(MarksEntryServlet)</span></li>
+          <li>Results: total, percentage, grade &amp; class rank <span class="ref">(ResultServlet)</span></li>
+          <li>Printable report card with pass/fail per subject <span class="ref">(report_card.jsp)</span></li>
+          <li>OMR answer-sheet reading — runs entirely on your own server, no cloud service, no per-sheet cost <span class="ref">(OmrService)</span></li>
+          <li>Sheet layouts held as data, so more than one answer-sheet design is supported side by side</li>
+          <li>Auto-scoring with the sheet’s marking scheme (+4 / −1) against the answer key</li>
+          <li><b>Scholarship exam:</b> school-list upload, roll-number generation, hall tickets <span class="ref">(§2)</span></li>
+          <li><b>Scholarship exam:</b> four booklet answer keys per exam, subject split you define yourself</li>
+          <li><b>Scholarship exam:</b> batch scanning with a review queue for any sheet that cannot be identified</li>
+          <li><b>Scholarship exam:</b> scholarship calculation, ranked results, PDF slips, Excel export, hand-off to counsellors</li>
+          <li>Per-student scan history &amp; batch export</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Tune the sheet reader against ~20 real filled sheets before the first live scholarship exam</li>
+          <li>In-browser MCQ exam in Student Portal with timer &amp; auto-submit</li>
+          <li>Question bank by subject/chapter/difficulty</li>
+          <li>Instant result + solution/explanation view after submission</li>
+          <li>Practice tests &amp; previous-year papers</li>
+          <li>Anti-cheating: randomized questions, tab-switch detection</li>
+          <li>Performance analytics: topic-wise strengths &amp; weaknesses</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 TEACHER PORTAL -->
+  <div class="module planned">
+    <h3><span class="num">8</span> Teacher Portal <span class="st plan">FUTURE</span></h3>
+    <p class="desc">Dedicated workspace for teachers — foundation exists, screens to be built.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>TEACHER role already defined in users table — teachers can log in today</li>
+          <li>Teachers can use shared staff screens (attendance, marks entry, materials)</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Teacher dashboard: my classes, today's schedule, pending tasks</li>
+          <li>Class/subject assignment — teacher sees only own batches</li>
+          <li>Attendance marking restricted to assigned classes</li>
+          <li>Marks entry scoped to own subject</li>
+          <li>Upload materials &amp; homework for own classes</li>
+          <li>Teacher ↔ student/parent messaging</li>
+          <li>Teacher timetable &amp; substitution management</li>
+          <li>Syllabus / lesson-plan progress tracking</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9 ADMIN PORTAL -->
+  <div class="module">
+    <h3><span class="num">9</span> Admin Portal <span class="st ok">AVAILABLE</span></h3>
+    <p class="desc">Central console for institute owner/administrator.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Live-stats dashboard: students, new inquiries, fees collected, today's collection, outstanding, present-today, exams, paid/partial/pending split <span class="ref">(StatsDAO)</span></li>
+          <li><b>Sales strip</b>: enquiries, admissions, conversion %, revenue &amp; pending fees this month</li>
+          <li><b>Counsellor leaderboard</b> ranked by admissions, each row opening that counsellor's own dashboard</li>
+          <li>Per-counsellor dashboard: own pipeline, work due today, month-to-date performance <span class="ref">(/my-dashboard)</span></li>
+          <li>Counsellors sign in straight to their own sales dashboard</li>
+          <li>Launcher for all operational modules from one screen <span class="ref">(dashboard.jsp)</span></li>
+          <li>Full access to every module: admissions, inquiries, students, fees, attendance, exams, materials, OMR, tickets</li>
+          <li>Secure session-based login, logout, role shown in header</li>
+          <li>Default seeded admin account with hashed password</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>User management UI: create staff/teacher logins, reset passwords, activate/deactivate</li>
+          <li>Role &amp; permission matrix beyond the current ADMIN / STAFF / TEACHER / COUNSELLOR scoping</li>
+          <li>Institute settings: logo, name, academic session, receipt series</li>
+          <li>Audit trail viewer (who did what, when)</li>
+          <li>Announcement broadcast to students/staff</li>
+          <li>Branch management console (ties into Module 11)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 REPORTING -->
+  <div class="module">
+    <h3><span class="num">10</span> Reporting <span class="st ok">AVAILABLE</span></h3>
+    <p class="desc">Operational and academic reports for decision making.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li><b>13 reports</b> — 9 sales and 4 finance — each with date range, print view and one-click Excel export <span class="ref">(ReportServlet / ReportExportServlet)</span></li>
+          <li>Lead Source Analysis — enquiries, conversions and revenue per source</li>
+          <li>Counsellor Performance — leads, follow-ups, demos, admissions, conversion %, collections</li>
+          <li>Conversion Funnel — where enquiries sit and where they stall</li>
+          <li>Lost Lead Analysis — with the objection recorded against each</li>
+          <li>Course-wise Admissions — admissions, billed, collected, outstanding</li>
+          <li>Fee Collection Register — every payment with mode split (day book)</li>
+          <li>Pending Fees &amp; Ageing — 30/60/90-day buckets</li>
+          <li>Discount &amp; Scholarship Register — who approved what, and why</li>
+          <li>Target vs Achievement — counsellor targets against actuals for the quarter</li>
+          <li><b>Exam Fee Collection</b> — per exam: expected, collected, outstanding and the
+              candidate counts by state <span class="ref">(admin only)</span></li>
+          <li><b>Expense Register</b> — every live voucher with its vendor and work order
+              <span class="ref">(admin only)</span></li>
+          <li><b>Vendor Outstanding</b> — ordered, paid and still owed per vendor
+              <span class="ref">(admin only)</span></li>
+          <li><b>Fund Statement</b> — opening, credits, debits and closing balance per fund
+              <span class="ref">(admin only)</span></li>
+          <li>Attendance report by class &amp; date range with P/A/Late/Leave counts and % <span class="ref">(AttendanceReportServlet)</span></li>
+          <li>Exam results report: totals, %, grade, rank <span class="ref">(ResultServlet)</span></li>
+          <li>Printable report card per student</li>
+          <li>Fee summary: billed vs collected vs outstanding, status-wise</li>
+          <li>Printable payment receipt + PDF receipt</li>
+          <li>OMR results export to CSV / Excel (XLSX)</li>
+          <li>Dashboard KPI tiles (real-time counts &amp; amounts)</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Student performance trend across exams (graphs)</li>
+          <li>Class-wise / subject-wise average comparison</li>
+          <li>Scheduled email/WhatsApp summary to the owner (daily digest)</li>
+          <li>Charts &amp; visual dashboards on top of the existing report data</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 MULTI BRANCH -->
+  <div class="module planned">
+    <h3><span class="num">11</span> Multi Branch Compatible <span class="st plan">FUTURE</span></h3>
+    <p class="desc">Run multiple institute branches on one system with consolidated control.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Single-branch operation fully functional (all data institute-wide)</li>
+          <li>Clean MVC/DAO architecture — branch dimension can be added centrally</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Branch master (code, name, address, contact)</li>
+          <li>branch_id column across students, payments, attendance, exams, users</li>
+          <li>Branch-wise login: staff sees only own branch data</li>
+          <li>Branch-wise admission-number &amp; receipt-number series</li>
+          <li>Consolidated head-office dashboard: branch comparison of admissions, collection &amp; attendance</li>
+          <li>Inter-branch student transfer</li>
+          <li>Branch-wise fee slabs &amp; settings</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 BIOMETRIC -->
+  <div class="module planned">
+    <h3><span class="num">12</span> Biometric Attendance Device Integration <span class="st plan">FUTURE</span></h3>
+    <p class="desc">Automatic attendance from fingerprint/face devices instead of manual marking.</p>
+    <div class="cols">
+      <div class="col now"><h4>Currently Available</h4>
+        <ul>
+          <li>Manual attendance module with clean day-wise table &amp; unique student+date key — ready to receive device data</li>
+          <li>Attendance reports &amp; student-portal view will work unchanged once device data flows in</li>
+        </ul>
+      </div>
+      <div class="col next"><h4>Future Implementation</h4>
+        <ul>
+          <li>Device integration (eSSL / ZKTeco / Realtime) via push-SDK or polling API</li>
+          <li>Student enrollment mapping: device user-ID ↔ admission number</li>
+          <li>Auto-sync punches into attendance table (first-in as Present, late rule by time)</li>
+          <li>Real-time IN/OUT log with device &amp; timestamp</li>
+          <li>Instant WhatsApp alert to parent on student entry/exit</li>
+          <li>Staff biometric attendance &amp; monthly muster report</li>
+          <li>Multi-device, multi-branch support (ties into Module 11)</li>
+          <li>Missed-punch correction screen with approval</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ROADMAP ================= -->
+  <h2 class="sec">6. Suggested Implementation Priority</h2>
+  <table>
+    <tr><th style="width:150px;">Phase</th><th>Scope</th><th>Modules Touched</th></tr>
+    <tr><td><b>✅ Completed</b><br><span class="ref">Aug 2026</span></td><td><b>Sales Module</b> — global search, lead pipeline, follow-ups, demos, conversion, fee ledger with discounts &amp; instalments, counsellor dashboards, reminder engine, 8 reports with Excel export</td><td>2, 4, 9, 10</td></tr>
+    <tr><td><b>Next</b></td><td>Switch reminder auto-send on once the three WhatsApp templates are approved by Meta; Student "My Fees + Pay Online"; User-management UI</td><td>4, 6, 9</td></tr>
+    <tr><td><b>Phase 2</b></td><td>Teacher Portal (role-scoped screens), Online MCQ exam engine + question bank, Student results view</td><td>6, 7, 8</td></tr>
+    <tr><td><b>Phase 3</b></td><td>Full public website + online admission, Expense / day-book accounting</td><td>1, 4</td></tr>
+    <tr><td><b>Phase 4</b></td><td>Multi-branch rollout, Biometric device integration with parent alerts</td><td>11, 12</td></tr>
+  </table>
+
+  <div class="footer">
+    Havellsson NEET Samrat — Tuition Management System · Module &amp; Activity Mapping Document · Updated 8 August 2026
+  </div>
+
+</div>
+</body>
+</html>

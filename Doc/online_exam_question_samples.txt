@@ -1,0 +1,62 @@
+ONLINE EXAM — BULK QUESTION UPLOAD FORMAT
+==========================================
+
+Paste this into the "Add questions" box on /online-exams (after opening the
+exam), one question per line, pipe-separated (|), in this exact order:
+
+CLASS|SUBJECT|CHAPTER|QUESTION_TEXT|OPTION_A|OPTION_B|OPTION_C|OPTION_D|CORRECT_ANSWER|DIFFICULTY|MARKS
+
+Rules:
+  - CLASS must exactly match the exam's own class (shown at the top of the
+    question-upload box) on every line, or the whole paste is rejected.
+  - CORRECT_ANSWER is one letter: A, B, C or D.
+  - DIFFICULTY is EASY, MEDIUM or HARD.
+  - MARKS is a whole number, 1 or more.
+  - The whole paste is all-or-nothing: if any line is malformed, nothing is
+    saved and you get a line-by-line list of what's wrong.
+
+Four sample exams (4 questions each) have already been created and
+published on the live system — one per class currently in the Students
+table — so the feature can be seen working end to end right now:
+
+  /online-exams?examId=3   Sample Test - 11th Science PCB
+  /online-exams?examId=4   Sample Test - 11th Science PCM
+  /online-exams?examId=5   Sample Test - 11th NEET ANKUR
+  /online-exams?examId=6   Sample Test - 12th Science PCB
+
+The exact lines used for each are below — reuse them as a template, or
+paste more onto the same exams to add more questions.
+
+
+── 11th - Science (PCB) ──────────────────────────────────────────────
+11th - Science (PCB)|Physics|Units and Measurements|Which of these is a fundamental SI unit?|Newton|Joule|Kilogram|Watt|C|EASY|1
+11th - Science (PCB)|Chemistry|Atomic Structure|What is the atomic number of Carbon?|4|6|8|12|B|EASY|1
+11th - Science (PCB)|Biology|Cell Biology|Which organelle is known as the powerhouse of the cell?|Nucleus|Ribosome|Mitochondria|Golgi body|C|EASY|1
+11th - Science (PCB)|Biology|Human Physiology|Which of these is NOT a function of the liver?|Bile production|Detoxification|Insulin secretion|Glycogen storage|C|MEDIUM|2
+
+
+── 11th - Science (PCM) ──────────────────────────────────────────────
+11th - Science (PCM)|Physics|Kinematics|What is the SI unit of velocity?|m/s^2|m/s|km/h|N|B|EASY|1
+11th - Science (PCM)|Chemistry|Periodic Table|Which group of the periodic table contains the noble gases?|Group 1|Group 17|Group 18|Group 2|C|EASY|1
+11th - Science (PCM)|Mathematics|Trigonometry|What is sin(90 degrees)?|0|1|-1|Undefined|B|EASY|1
+11th - Science (PCM)|Mathematics|Algebra|If x^2 = 49, what is x (positive root)?|5|6|7|8|C|EASY|1
+
+
+── 11th NEET : ANKUR ─────────────────────────────────────────────────
+11th NEET : ANKUR|Biology|Genetics|Who is known as the father of genetics?|Charles Darwin|Gregor Mendel|Louis Pasteur|Robert Hooke|B|EASY|1
+11th NEET : ANKUR|Physics|Laws of Motion|Which of Newton's laws states 'every action has an equal and opposite reaction'?|First law|Second law|Third law|Law of gravitation|C|EASY|1
+11th NEET : ANKUR|Chemistry|Chemical Bonding|Which type of bond involves sharing of electrons?|Ionic bond|Covalent bond|Metallic bond|Hydrogen bond|B|EASY|1
+11th NEET : ANKUR|Biology|Plant Physiology|Which pigment is primarily responsible for photosynthesis?|Chlorophyll|Melanin|Hemoglobin|Carotene|A|EASY|1
+
+
+── 12th - Science (PCB) ──────────────────────────────────────────────
+12th - Science (PCB)|Biology|Reproduction|What is the term for fusion of male and female gametes?|Mitosis|Fertilization|Meiosis|Pollination|B|EASY|1
+12th - Science (PCB)|Physics|Electrostatics|What is the SI unit of electric charge?|Volt|Ampere|Coulomb|Ohm|C|EASY|1
+12th - Science (PCB)|Chemistry|Organic Chemistry|What is the general formula of alkanes?|CnH2n|CnH2n+2|CnH2n-2|CnHn|B|MEDIUM|2
+12th - Science (PCB)|Biology|Human Physiology|Which hormone primarily regulates blood sugar level?|Thyroxine|Insulin|Adrenaline|Estrogen|B|MEDIUM|2
+
+
+Note: class names above are exactly what's in the Students table today
+(students.class_name). If a new class is added later, use that exact
+spelling on every question line for that exam — a mismatch rejects the
+whole paste with a message naming which line and what it expected.

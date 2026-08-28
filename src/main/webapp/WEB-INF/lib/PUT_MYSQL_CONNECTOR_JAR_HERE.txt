@@ -1,0 +1,10 @@
+Place the MySQL Connector/J driver here, e.g.:
+
+    mysql-connector-j-8.4.0.jar
+
+Download: https://dev.mysql.com/downloads/connector/j/  (choose "Platform Independent")
+
+Without this jar the app will throw:
+    ClassNotFoundException: com.mysql.cj.jdbc.Driver
+
+You may delete this .txt file once the jar is in place.

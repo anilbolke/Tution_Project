@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jocata API Integration Guide - Complete Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0b3d63 0%, #1e5a8e 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+
+        nav h2 {
+            margin-bottom: 15px;
+            color: #0b3d63;
+        }
+
+        nav .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        nav a {
+            display: block;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-left: 4px solid #0b3d63;
+            text-decoration: none;
+            color: #333;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            background: #e0e0e0;
+            border-left-color: #1e5a8e;
+        }
+
+        .section {
+            background: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #0b3d63;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #0b3d63;
+        }
+
+        .section h3 {
+            color: #1e5a8e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .api-container {
+            background: #f9f9f9;
+            border-left: 5px solid #0b3d63;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+
+        .api-container.name {
+            border-left-color: #4CAF50;
+        }
+
+        .api-container.transaction {
+            border-left-color: #2196F3;
+        }
+
+        .api-container.reverse {
+            border-left-color: #FF9800;
+        }
+
+        .api-container.health {
+            border-left-color: #9C27B0;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-left: 4px solid;
+        }
+
+        .code-block.java {
+            border-left-color: #667eea;
+        }
+
+        .code-block.request {
+            border-left-color: #4CAF50;
+        }
+
+        .code-block.response {
+            border-left-color: #2196F3;
+        }
+
+        .code-label {
+            font-size: 0.85em;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .api-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .api-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .api-badge.get {
+            background: #4CAF50;
+        }
+
+        .api-badge.post {
+            background: #2196F3;
+        }
+
+        .endpoint {
+            background: #e8f5e9;
+            border: 1px solid #4CAF50;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th {
+            background: #0b3d63;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:hover {
+            background: #f5f5f5;
+        }
+
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            border-bottom: 1px solid #eee;
+        }
+
+        .checklist li:before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+            color: #0b3d63;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .collapsible-header {
+            background: #0b3d63;
+            color: white;
+            cursor: pointer;
+            padding: 15px 20px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.05em;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .collapsible-header:hover {
+            background: #1e5a8e;
+        }
+
+        .collapsible-header.active {
+            background: #0a2d4e;
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .collapsible-content.show {
+            display: block;
+        }
+
+        .arrow {
+            display: inline-block;
+            transition: transform 0.3s;
+            font-size: 1.2em;
+        }
+
+        .collapsible-header.active .arrow {
+            transform: rotate(180deg);
+        }
+
+        .params-table {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .step-by-step {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .step-by-step ol {
+            margin-left: 20px;
+            line-height: 2;
+        }
+
+        .step-by-step li {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: #fff8e1;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card h4 {
+            color: #0b3d63;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            background: #0b3d63;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 40px;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-box {
+            padding: 20px;
+            border-radius: 8px;
+            background: #f0f0f0;
+        }
+
+        .comparison-box h4 {
+            color: #0b3d63;
+            margin-bottom: 15px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .section, header {
+                page-break-inside: avoid;
+            }
+
+            nav {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            nav .nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .code-block {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>🔐 Jocata API Integration Guide</h1>
+            <div class="subtitle">Complete API Documentation & Integration Examples</div>
+            <div class="subtitle">For IDFC LastMile & Other Projects</div>
+        </header>
+
+        <!-- NAVIGATION -->
+        <nav>
+            <h2>📋 Quick Navigation</h2>
+            <div class="nav-grid">
+                <a href="#overview">Overview</a>
+                <a href="#setup">Setup & Configuration</a>
+                <a href="#name-screening">Name Screening API</a>
+                <a href="#transaction-screening">Transaction Screening API</a>
+                <a href="#reverse-api">Reverse API</a>
+                <a href="#health-check">Health Check API</a>
+                <a href="#integration">Integration Patterns</a>
+                <a href="#examples">Code Examples</a>
+                <a href="#projects">Project-Specific Usage</a>
+            </div>
+        </nav>
+
+        <!-- OVERVIEW SECTION -->
+        <div class="section" id="overview">
+            <h2>📊 Overview</h2>
+
+            <p style="font-size: 1.05em; margin-bottom: 20px;">
+                The <span class="highlight">Jocata API Suite</span> provides compliance screening capabilities,
+                including name screening, transaction screening, and health checks. All APIs support encrypted requests/responses
+                using IndusInd SDK encryption.
+            </p>
+
+            <h3>APIs Available</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <h4>🔍 Name Screening</h4>
+                    <p>Screen individual/entity names against sanction and watchlists</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;"><strong>Endpoint:</strong> /apiscreening/v1</p>
+                </div>
+
+                <div class="card">
+                    <h4>💰 Transaction Screening</h4>
+                    <p>Screen transaction parties (sender/receiver) against compliance lists</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;"><strong>Endpoint:</strong> /transactionscreening/v1</p>
+                </div>
+
+                <div class="card">
+                    <h4>🏥 Health Check</h4>
+                    <p>Verify API gateway connectivity and encryption capability</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;"><strong>Endpoint:</strong> /health</p>
+                </div>
+            </div>
+
+            <h3>Key Features</h3>
+            <ul style="margin: 15px 0 15px 20px;">
+                <li><strong>End-to-End Encryption:</strong> All requests/responses encrypted using IndusInd SDK</li>
+                <li><strong>Multiple Identifiers:</strong> Support for PAN, Aadhar, Passport, GST, CIN, DIN, and more</li>
+                <li><strong>Rich Address Data:</strong> Location-based screening with city, state, country, pincode</li>
+                <li><strong>Real-time Results:</strong> Immediate match/no-match responses</li>
+                <li><strong>Transaction Context:</strong> Support for transaction-specific screening with account details</li>
+                <li><strong>Local Reverse Option:</strong> Demo/testing mode for reverse flow without network</li>
+            </ul>
+
+            <div class="warning">
+                <strong>⚠️ Important:</strong> The test page (jocataApiTest.jsp) is for testing only. Remove or restrict before production deployment.
+            </div>
+        </div>
+
+        <!-- SETUP & CONFIGURATION -->
+        <div class="section" id="setup">
+            <h2>⚙️ Setup & Configuration</h2>
+
+            <h3>Prerequisites</h3>
+            <ul class="checklist">
+                <li>JocataClient library in classpath</li>
+                <li>IndusInd API client SDK (crypto library)</li>
+                <li>api-client.properties configuration file</li>
+                <li>Valid Jocata API credentials (API key, API secret)</li>
+                <li>Network access to Jocata API gateway</li>
+            </ul>
+
+            <h3>Configuration File: api-client.properties</h3>
+
+            <div class="code-block java">
+                <span class="code-label">📝 api-client.properties (Location: Constants.configFilePath)</span>
+# Jocata API Configuration
+jocata.api.url=https://api.jocata.com          # API Gateway URL
+jocata.api.key=YOUR_API_KEY                    # API Key from Jocata
+jocata.api.secret=YOUR_API_SECRET              # API Secret for encryption
+jocata.encryption.algorithm=AES256              # Encryption algorithm
+jocata.encryption.keysize=256                   # Key size in bits
+
+# Proxy settings (if applicable)
+jocata.proxy.enabled=false
+jocata.proxy.host=
+jocata.proxy.port=
+jocata.proxy.username=
+jocata.proxy.password=
+
+# Timeout settings
+jocata.timeout.connect=10000                   # 10 seconds
+jocata.timeout.read=30000                      # 30 seconds
+            </div>
+
+            <h3>JocataClientHolder - Singleton Pattern</h3>
+
+            <div class="code-block java">
+                <span class="code-label">☕ Java Implementation</span>
+package com.api.exh.integration.jocata;
+
+import com.fable.apiclient.jocata.JocataClient;
+import com.api.exh.component.util.Constants;
+
+public class JocataClientHolder {
+    private static JocataClient instance;
+    private static final Object lock = new Object();
+
+    public static JocataClient get() throws Exception {
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) {
+                    // Load from api-client.properties
+                    instance = new JocataClient(Constants.configFilePath);
+                }
+            }
+        }
+        return instance;
+    }
+
+    public static void reset() {
+        synchronized (lock) {
+            instance = null;
+        }
+    }
+}
+            </div>
+
+            <h3>Integration in Your Application</h3>
+
+            <div class="code-block java">
+                <span class="code-label">☕ Basic Usage Pattern</span>
+import com.api.exh.integration.jocata.JocataClientHolder;
+import com.fable.apiclient.jocata.JocataClient;
+
+public class ComplianceScreeningService {
+
+    public void screenName(String name) throws Exception {
+        JocataClient jc = JocataClientHolder.get();
+
+        // Build request
+        Map&lt;String, Object&gt; request = buildNameScreeningRequest(name);
+
+        // Send request (encryption/decryption handled internally)
+        String response = jc.invoke("/apiscreening/v1", request);
+
+        // Parse response
+        processResponse(response);
+    }
+}
+            </div>
+        </div>
+
+        <!-- NAME SCREENING API -->
+        <div class="section" id="name-screening">
+            <div class="api-header">
+                <h2>🔍 Name Screening API</h2>
+                <span class="api-badge post">POST</span>
+            </div>
+
+            <div class="api-container name">
+                <h3>Purpose</h3>
+                <p>Screen individuals and entities against global sanctions, watchlists, and compliance lists based on name and identifiers.</p>
+
+                <h3>Endpoint</h3>
+                <div class="endpoint">/apiscreening/v1</div>
+
+                <h3>Request Structure</h3>
+
+                <div class="code-block request">
+                    <span class="code-label">Request JSON Structure</span>
+{
+  "rampRequest": {
+    "listMatchingPayload": {
+      "requestListVO": {
+        "businessUnit": "RAMP",
+        "subBusinessUnit": "API",
+        "requestType": "API",
+        "requestUuId": "IBL-TEST-0001",
+        "requestVOList": [
+          {
+            "name": "ERIKA CSANYI",
+            "entityName": "",
+            "dob": "010169",
+            "nationality": "HUNGARIAN",
+            "placeOfBirth": "BUDAPEST",
+            "country": "INDIA",
+            "state": "MAHARASHTRA",
+            "city": "MUMBAI",
+            "pincode": "400001",
+            "address": "123 Business Park",
+            "concatAddress": "123 Business Park, MUMBAI, MAHARASHTRA, INDIA",
+            "pan": "AABCD1234A",
+            "passport": "P123456789",
+            "aadhar": "123456789012",
+            "customerId": "CUST-MATCH-01",
+            "phone": "+91-9876543210",
+            "email": "test@example.com"
+          }
+        ]
+      }
+    }
+  }
+}
+                </div>
+
+                <h3>Request Parameters</h3>
+
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td><strong>name</strong></td>
+                        <td>String</td>
+                        <td>✓</td>
+                        <td>Full name of individual to screen. Format: DDMMMYYYY for DOB</td>
+                    </tr>
+                    <tr>
+                        <td><strong>entityName</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Entity name (for corporate/org screening)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>dob</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Date of birth. Format: DDMMMYYYY (e.g., 010169 for Jan 1, 1969)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>nationality</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Nationality/country of origin</td>
+                    </tr>
+                    <tr>
+                        <td><strong>country</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Current country of residence</td>
+                    </tr>
+                    <tr>
+                        <td><strong>state</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>State/province</td>
+                    </tr>
+                    <tr>
+                        <td><strong>city</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>City</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pincode</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Postal code</td>
+                    </tr>
+                    <tr>
+                        <td><strong>address</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Full address</td>
+                    </tr>
+                    <tr>
+                        <td><strong>concatAddress</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Concatenated address (street, city, state, country)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pan</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Indian PAN (Permanent Account Number)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>aadhar</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Indian Aadhar number</td>
+                    </tr>
+                    <tr>
+                        <td><strong>passport</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Passport number</td>
+                    </tr>
+                    <tr>
+                        <td><strong>customerId</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Your internal customer/party ID</td>
+                    </tr>
+                </table>
+
+                <h3>Response Structure</h3>
+
+                <div class="code-block response">
+                    <span class="code-label">Response JSON</span>
+{
+  "rampResponse": {
+    "statusCode": "000",
+    "statusMessage": "Success",
+    "listMatchingResponse": {
+      "responseListVO": [
+        {
+          "requestId": "IBL-TEST-0001",
+          "responseId": "RESP-2024-001",
+          "matchFlag": "Y",
+          "matchCount": 1,
+          "matches": [
+            {
+              "matchedName": "ERIKA CSANYI",
+              "matchType": "Name Match",
+              "matchProbability": "98",
+              "listCode": "OFAC",
+              "listName": "US Treasury OFAC",
+              "caseId": "25072103",
+              "remarks": "True Match - Sanction list"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+                </div>
+
+                <h3>Response Fields</h3>
+
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td><strong>statusCode</strong></td>
+                        <td>000 = Success, others indicate error. Check statusMessage</td>
+                    </tr>
+                    <tr>
+                        <td><strong>statusMessage</strong></td>
+                        <td>Human-readable status message</td>
+                    </tr>
+                    <tr>
+                        <td><strong>matchFlag</strong></td>
+                        <td>Y = Match found, N = No match</td>
+                    </tr>
+                    <tr>
+                        <td><strong>matchCount</strong></td>
+                        <td>Number of matches found</td>
+                    </tr>
+                    <tr>
+                        <td><strong>matches[]</strong></td>
+                        <td>Array of matching records</td>
+                    </tr>
+                    <tr>
+                        <td><strong>matchType</strong></td>
+                        <td>Type of match: Name, DOB, Address, ID, etc.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>matchProbability</strong></td>
+                        <td>Match confidence score (0-100%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>listCode</strong></td>
+                        <td>Compliance list code (OFAC, EU, UN, RBI, etc.)</td>
+                    </tr>
+                </table>
+
+                <h3>Code Example</h3>
+
+                <button class="collapsible-header">
+                    <span>Java Implementation Example</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="collapsible-content">
+                    <div class="code-block java">
+public class NameScreeningService {
+
+    public ScreeningResult screenName(String name, String dob,
+                                     String nationality, String country)
+            throws Exception {
+
+        JocataClient jc = JocataClientHolder.get();
+
+        // Build request payload
+        Map&lt;String, Object&gt; partyVO = new LinkedHashMap&lt;&gt;();
+        partyVO.put("name", name);
+        partyVO.put("dob", dob);           // Format: DDMMMYYYY
+        partyVO.put("nationality", nationality);
+        partyVO.put("country", country);
+        partyVO.put("customerId", UUID.randomUUID().toString());
+
+        Map&lt;String, Object&gt; requestListVO = new LinkedHashMap&lt;&gt;();
+        requestListVO.put("businessUnit", "RAMP");
+        requestListVO.put("subBusinessUnit", "API");
+        requestListVO.put("requestType", "API");
+        requestListVO.put("requestUuId", "IBL-" + System.currentTimeMillis());
+        requestListVO.put("requestVOList", Collections.singletonList(partyVO));
+
+        Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();
+        payload.put("rampRequest", Collections.singletonMap(
+            "listMatchingPayload",
+            Collections.singletonMap("requestListVO", requestListVO)
+        ));
+
+        // Send encrypted request (encryption handled internally)
+        String jsonRequest = Json.write(payload);
+        String jsonResponse = jc.invoke("/apiscreening/v1", jsonRequest);
+
+        // Parse response
+        Map&lt;String, Object&gt; responseMap = Json.parseObject(jsonResponse);
+        Map&lt;String, Object&gt; rampResponse = (Map) responseMap.get("rampResponse");
+
+        RampResponse result = Beans.fromMap(rampResponse, RampResponse.class);
+
+        // Create result object
+        ScreeningResult screeningResult = new ScreeningResult();
+        screeningResult.setStatusCode(result.statusCode);
+        screeningResult.setStatusMessage(result.statusMessage);
+        screeningResult.setMatch(result.isMatch());
+        screeningResult.setMatchCount(result.getMatchCount());
+
+        return screeningResult;
+    }
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANSACTION SCREENING API -->
+        <div class="section" id="transaction-screening">
+            <div class="api-header">
+                <h2>💰 Transaction Screening API</h2>
+                <span class="api-badge post">POST</span>
+            </div>
+
+            <div class="api-container transaction">
+                <h3>Purpose</h3>
+                <p>Screen transaction parties (sender and receiver) in the context of a specific transaction to detect potential compliance risks.</p>
+
+                <h3>Endpoint</h3>
+                <div class="endpoint">/transactionscreening/v1</div>
+
+                <h3>Request Structure</h3>
+
+                <div class="code-block request">
+                    <span class="code-label">Request JSON Structure</span>
+{
+  "rampRequest": {
+    "listMatchingPayload": {
+      "requestListVO": {
+        "businessUnit": "RAMP",
+        "subBusinessUnit": "API",
+        "requestType": "TSG",
+        "tranId": "TXN-90001",
+        "accountNumber": "ACC-12345",
+        "remarks": "outward remittance",
+        "requestVOList": [
+          {
+            "type": "sender",
+            "customerType": "I",
+            "name": "JOHN DOE",
+            "entityName": "",
+            "dob": "010175",
+            "nationality": "USA",
+            "country": "USA",
+            "state": "NEW YORK",
+            "city": "NEW YORK",
+            "pincode": "10001",
+            "address": "456 Business Ave",
+            "contactAddress": "456 Business Ave, NEW YORK, NY, USA",
+            "pan": "AABCD1234B",
+            "passport": "P987654321",
+            "customerId": "CUST-SENDER-01",
+            "phone": "+1-2125551234",
+            "email": "sender@example.com"
+          },
+          {
+            "type": "receiver",
+            "customerType": "I",
+            "name": "RAJESH KUMAR",
+            "dob": "010180",
+            "nationality": "INDIAN",
+            "country": "INDIA",
+            "state": "MAHARASHTRA",
+            "city": "MUMBAI",
+            "pincode": "400001",
+            "aadhar": "987654321012",
+            "customerId": "CUST-RECEIVER-01"
+          }
+        ]
+      }
+    }
+  }
+}
+                </div>
+
+                <h3>Key Differences from Name Screening</h3>
+
+                <div class="comparison">
+                    <div class="comparison-box">
+                        <h4>Name Screening</h4>
+                        <ul style="text-align: left; margin: 10px 0;">
+                            <li>requestType: "API"</li>
+                            <li>Single party screening</li>
+                            <li>concatAddress field</li>
+                            <li>No transaction context</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-box">
+                        <h4>Transaction Screening</h4>
+                        <ul style="text-align: left; margin: 10px 0;">
+                            <li>requestType: "TSG"</li>
+                            <li>Multiple parties (sender/receiver)</li>
+                            <li>contactAddress field</li>
+                            <li>Transaction ID, account number</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Request Parameters</h3>
+
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td><strong>type</strong></td>
+                        <td>String</td>
+                        <td>✓</td>
+                        <td>Party type: sender, receiver, port, vessel</td>
+                    </tr>
+                    <tr>
+                        <td><strong>customerType</strong></td>
+                        <td>String</td>
+                        <td>✓</td>
+                        <td>I = Individual, E = Entity/Organization</td>
+                    </tr>
+                    <tr>
+                        <td><strong>tranId</strong></td>
+                        <td>String</td>
+                        <td>✓</td>
+                        <td>Unique transaction ID (e.g., TXN-90001)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>accountNumber</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Account number for the transaction</td>
+                    </tr>
+                    <tr>
+                        <td><strong>remarks</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Transaction purpose/remarks</td>
+                    </tr>
+                    <tr>
+                        <td><strong>contactAddress</strong></td>
+                        <td>String</td>
+                        <td></td>
+                        <td>Contact address of party (different from concatAddress)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>name</strong></td>
+                        <td>String</td>
+                        <td>✓</td>
+                        <td>Party name. Format: DD/MM/YYYY for DOB in txn</td>
+                    </tr>
+                </table>
+
+                <h3>Code Example</h3>
+
+                <button class="collapsible-header">
+                    <span>Java Implementation Example</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="collapsible-content">
+                    <div class="code-block java">
+public class TransactionScreeningService {
+
+    public ScreeningResult screenTransaction(String tranId,
+                                            String senderName, String receiverName,
+                                            String accountNumber, String remarks)
+            throws Exception {
+
+        JocataClient jc = JocataClientHolder.get();
+
+        // Build sender party
+        Map&lt;String, Object&gt; senderVO = new LinkedHashMap&lt;&gt;();
+        senderVO.put("type", "sender");
+        senderVO.put("customerType", "I");
+        senderVO.put("name", senderName);
+        senderVO.put("dob", "01/01/1975");
+        senderVO.put("nationality", "USA");
+        senderVO.put("customerId", UUID.randomUUID().toString());
+
+        // Build receiver party
+        Map&lt;String, Object&gt; receiverVO = new LinkedHashMap&lt;&gt;();
+        receiverVO.put("type", "receiver");
+        receiverVO.put("customerType", "I");
+        receiverVO.put("name", receiverName);
+        receiverVO.put("dob", "01/01/1980");
+        receiverVO.put("nationality", "INDIAN");
+        receiverVO.put("country", "INDIA");
+        receiverVO.put("customerId", UUID.randomUUID().toString());
+
+        // Build request
+        Map&lt;String, Object&gt; requestListVO = new LinkedHashMap&lt;&gt;();
+        requestListVO.put("businessUnit", "RAMP");
+        requestListVO.put("subBusinessUnit", "API");
+        requestListVO.put("requestType", "TSG");
+        requestListVO.put("tranId", tranId);
+        requestListVO.put("accountNumber", accountNumber);
+        requestListVO.put("remarks", remarks);
+        requestListVO.put("requestVOList", Arrays.asList(senderVO, receiverVO));
+
+        Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();
+        payload.put("rampRequest", Collections.singletonMap(
+            "listMatchingPayload",
+            Collections.singletonMap("requestListVO", requestListVO)
+        ));
+
+        // Send request
+        String jsonRequest = Json.write(payload);
+        String jsonResponse = jc.invoke("/transactionscreening/v1", jsonRequest);
+
+        // Parse and return result
+        return parseResponse(jsonResponse);
+    }
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REVERSE API -->
+        <div class="section" id="reverse-api">
+            <div class="api-header">
+                <h2>🔄 Reverse API (Local Demo)</h2>
+                <span class="api-badge post">LOCAL</span>
+            </div>
+
+            <div class="api-container reverse">
+                <h3>Purpose</h3>
+                <p>This is a <span class="highlight">local demonstration</span> of the reverse flow. It shows how to decrypt a reverse notification callback from Jocata without making a network request. Used for testing and development.</p>
+
+                <h3>Use Case: Incoming Callback</h3>
+                <p>When Jocata needs to update you on a case (e.g., case closed, new matches), it sends an encrypted reverse notification. You decrypt it locally to extract the case data.</p>
+
+                <h3>Request Structure</h3>
+
+                <div class="code-block request">
+                    <span class="code-label">Reverse Request JSON (Before Encryption)</span>
+{
+  "requestUuId": "IBL-TEST-0001",
+  "buCode": "RAMP",
+  "subBuCode": "API",
+  "uniqueRequestId": "SSG115351250721115220196",
+  "screeningStatus": "Closed-True Match",
+  "caseId": "25072103",
+  "customerId": "JCT-12345",
+  "remarks": "Case review completed",
+  "Comments": "Match confirmed by compliance officer"
+}
+                </div>
+
+                <h3>Response Structure (After Local Decode)</h3>
+
+                <div class="code-block response">
+                    <span class="code-label">Parsed Result</span>
+{
+  "caseId": "25072103",
+  "status": "Closed-True Match",
+  "uniqueRequestId": "SSG115351250721115220196",
+  "customerId": "JCT-12345",
+  "remarks": "Case review completed",
+  "comments": "Match confirmed by compliance officer"
+}
+                </div>
+
+                <h3>Code Example</h3>
+
+                <button class="collapsible-header">
+                    <span>Java Implementation - Handling Reverse Callback</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="collapsible-content">
+                    <div class="code-block java">
+public class ReverseCallbackHandler {
+
+    public void handleJocataCallback(String encryptedEnvelope) throws Exception {
+
+        JocataClient jc = JocataClientHolder.get();
+
+        // Decrypt the envelope locally (no network call)
+        ReverseRequest reverseData = jc.parseReverse(encryptedEnvelope);
+
+        // Now you have the decrypted data
+        String caseId = reverseData.caseId;
+        String status = reverseData.screeningStatus;
+        String requestId = reverseData.uniqueRequestId;
+
+        // Update your database with case status
+        updateCaseStatus(caseId, status);
+
+        // Log the update
+        Logger.info("Case " + caseId + " updated: " + status);
+
+        // Notify compliance team if match found
+        if ("Closed-True Match".equals(status)) {
+            notifyComplianceTeam(caseId, requestId);
+        }
+    }
+
+    private void updateCaseStatus(String caseId, String status) {
+        // Database update logic
+        // UPDATE jocata_cases SET status = ? WHERE case_id = ?
+    }
+
+    private void notifyComplianceTeam(String caseId, String requestId) {
+        // Send email or create alert
+        // Email: Case {caseId} requires compliance review
+    }
+}
+                    </div>
+                </div>
+
+                <h3>Webhook Integration (Servlet)</h3>
+
+                <button class="collapsible-header">
+                    <span>Handling Incoming Webhook from Jocata</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="collapsible-content">
+                    <div class="code-block java">
+@WebServlet("/jocata/reverse-callback")
+public class JocataReverseServlet extends HttpServlet {
+
+    protected void doPost(HttpServletRequest request,
+                        HttpServletResponse response)
+            throws ServletException, IOException {
+
+        try {
+            // Read encrypted envelope from request body
+            BufferedReader reader = request.getReader();
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            String encryptedEnvelope = sb.toString();
+
+            // Decrypt and process
+            JocataClient jc = JocataClientHolder.get();
+            ReverseRequest reverseData = jc.parseReverse(encryptedEnvelope);
+
+            // Process the callback
+            new ReverseCallbackHandler().handleJocataCallback(reverseData);
+
+            // Send success response
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\": \"success\"}");
+
+        } catch (Exception e) {
+            Logger.error("Error processing reverse callback", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"status\": \"error\", \"message\": \"" + e.getMessage() + "\"}");
+        }
+    }
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEALTH CHECK API -->
+        <div class="section" id="health-check">
+            <div class="api-header">
+                <h2>🏥 Health Check API</h2>
+                <span class="api-badge get">GET</span>
+            </div>
+
+            <div class="api-container health">
+                <h3>Purpose</h3>
+                <p>Verify that Jocata API gateway is reachable, encryption is working, and your configuration is correct.</p>
+
+                <h3>Endpoint</h3>
+                <div class="endpoint">GET /health</div>
+
+                <h3>Response Structure</h3>
+
+                <div class="code-block response">
+                    <span class="code-label">Health Check Response</span>
+{
+  "status": "UP",
+  "gatewayReachable": true,
+  "encryptOk": true,
+  "configValid": true,
+  "httpStatus": 200,
+  "apiVersion": "1.0.2",
+  "timestamp": "2024-01-15T10:30:45Z",
+  "responseTime": "245ms"
+}
+                </div>
+
+                <h3>Response Fields</h3>
+
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td><strong>status</strong></td>
+                        <td>UP = All healthy, DOWN = Issues found</td>
+                    </tr>
+                    <tr>
+                        <td><strong>gatewayReachable</strong></td>
+                        <td>true = Can connect to API gateway</td>
+                    </tr>
+                    <tr>
+                        <td><strong>encryptOk</strong></td>
+                        <td>true = Encryption/decryption working</td>
+                    </tr>
+                    <tr>
+                        <td><strong>configValid</strong></td>
+                        <td>true = Configuration is valid</td>
+                    </tr>
+                    <tr>
+                        <td><strong>httpStatus</strong></td>
+                        <td>HTTP response code (200 = OK)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>responseTime</strong></td>
+                        <td>Time taken for health check</td>
+                    </tr>
+                </table>
+
+                <h3>Code Example</h3>
+
+                <button class="collapsible-header">
+                    <span>Health Check Implementation</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="collapsible-content">
+                    <div class="code-block java">
+public class HealthCheckService {
+
+    public HealthStatus checkJocataHealth() throws Exception {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            JocataClient jc = JocataClientHolder.get();
+            Map&lt;String, Object&gt; health = jc.healthCheck();
+
+            long duration = System.currentTimeMillis() - startTime;
+
+            HealthStatus status = new HealthStatus();
+            status.setStatus((String) health.get("status"));
+            status.setGatewayReachable((Boolean) health.get("gatewayReachable"));
+            status.setEncryptOk((Boolean) health.get("encryptOk"));
+            status.setHttpStatus((Integer) health.get("httpStatus"));
+            status.setResponseTime(duration + "ms");
+            status.setTimestamp(new Date());
+
+            return status;
+
+        } catch (Exception e) {
+            HealthStatus status = new HealthStatus();
+            status.setStatus("DOWN");
+            status.setError(e.getMessage());
+            return status;
+        }
+    }
+
+    // Can be called periodically to monitor API health
+    public void monitorHealth() {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(() -> {
+            try {
+                HealthStatus status = checkJocataHealth();
+                if (!"UP".equals(status.getStatus())) {
+                    alertOps("Jocata API Health: " + status.getStatus());
+                }
+            } catch (Exception e) {
+                logger.error("Health check failed", e);
+            }
+        }, 0, 5, TimeUnit.MINUTES);
+    }
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTEGRATION PATTERNS -->
+        <div class="section" id="integration">
+            <h2>🔧 Integration Patterns</h2>
+
+            <h3>Pattern 1: Synchronous Screening (Real-time)</h3>
+
+            <div class="step-by-step">
+                <strong>Use Case:</strong> During customer onboarding, immediately screen the customer
+                <ol>
+                    <li>User submits customer details in form</li>
+                    <li>Application sends Name Screening request to Jocata</li>
+                    <li>Jocata returns match result immediately</li>
+                    <li>Application displays result and either approves or blocks onboarding</li>
+                    <li>No database update needed from your side (unless archiving)</li>
+                </ol>
+            </div>
+
+            <div class="code-block java">
+                <span class="code-label">Synchronous Pattern Implementation</span>
+public class OnboardingService {
+
+    public OnboardingResult onboardCustomer(Customer customer) throws Exception {
+        // Screen customer immediately
+        ScreeningResult result = screeningService.screenName(
+            customer.getName(),
+            customer.getDob(),
+            customer.getNationality(),
+            customer.getCountry()
+        );
+
+        if (result.isMatch()) {
+            // Match found - block onboarding
+            return OnboardingResult.BLOCKED("Screening match found");
+        } else {
+            // No match - proceed with onboarding
+            customerRepository.save(customer);
+            return OnboardingResult.APPROVED();
+        }
+    }
+}
+            </div>
+
+            <h3>Pattern 2: Asynchronous Screening (Batch)</h3>
+
+            <div class="step-by-step">
+                <strong>Use Case:</strong> Screen multiple customers/transactions in batch during off-peak hours
+                <ol>
+                    <li>Collect customer records throughout the day</li>
+                    <li>At night, process batch screening request</li>
+                    <li>Jocata returns results for all records</li>
+                    <li>Update database with screening status</li>
+                    <li>Alert compliance team about any matches</li>
+                </ol>
+            </div>
+
+            <div class="code-block java">
+                <span class="code-label">Batch Screening Pattern</span>
+@Scheduled(cron = "0 0 2 * * *")  // Run at 2 AM daily
+public void batchScreening() throws Exception {
+    List&lt;Customer&gt; unscreenedCustomers =
+        customerRepository.findByScreeningStatus("PENDING");
+
+    for (Customer customer : unscreenedCustomers) {
+        try {
+            ScreeningResult result = screeningService.screenName(
+                customer.getName(),
+                customer.getDob(),
+                customer.getNationality(),
+                customer.getCountry()
+            );
+
+            // Update database
+            customer.setScreeningStatus(result.isMatch() ? "MATCHED" : "CLEAR");
+            customer.setScreeningResult(Json.write(result));
+            customerRepository.save(customer);
+
+            // Alert if match
+            if (result.isMatch()) {
+                complianceAlert.send("Match: " + customer.getName());
+            }
+        } catch (Exception e) {
+            logger.error("Screening failed for customer: " + customer.getId(), e);
+            customer.setScreeningStatus("ERROR");
+            customerRepository.save(customer);
+        }
+    }
+}
+            </div>
+
+            <h3>Pattern 3: Transaction Screening (High Volume)</h3>
+
+            <div class="step-by-step">
+                <strong>Use Case:</strong> Screen every transaction (sender/receiver) for compliance
+                <ol>
+                    <li>Transaction initiated by user</li>
+                    <li>System extracts sender and receiver details</li>
+                    <li>Sends transaction screening request to Jocata</li>
+                    <li>If matches found, transaction blocked and escalated</li>
+                    <li>If clear, transaction proceeds normally</li>
+                </ol>
+            </div>
+
+            <h3>Pattern 4: Case Management (Reverse Flow)</h3>
+
+            <div class="step-by-step">
+                <strong>Use Case:</strong> Handle Jocata case updates and manual review closure
+                <ol>
+                    <li>Case created when match found in screening</li>
+                    <li>Compliance team reviews case in Jocata UI</li>
+                    <li>Jocata sends reverse callback when case resolved</li>
+                    <li>Your system receives and decrypts callback</li>
+                    <li>Update case status in your database</li>
+                    <li>Unblock transaction if case cleared</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- CODE EXAMPLES -->
+        <div class="section" id="examples">
+            <h2>💻 Complete Code Examples</h2>
+
+            <h3>Complete Service Implementation</h3>
+
+            <button class="collapsible-header">
+                <span>Full Compliance Screening Service Class</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="collapsible-content">
+                <div class="code-block java">
+package com.api.exh.integration.jocata;
+
+import com.fable.apiclient.Json;
+import com.fable.apiclient.ApiException;
+import com.fable.apiclient.jocata.JocataClient;
+import java.util.*;
+
+@Service
+public class ComplianceScreeningService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ComplianceScreeningService.class);
+
+    // ===== NAME SCREENING =====
+    public ScreeningResult screenName(String name, String dob, String nationality)
+            throws Exception {
+        try {
+            JocataClient jc = JocataClientHolder.get();
+
+            Map&lt;String, Object&gt; partyVO = buildPartyVO(name, dob, nationality);
+            Map&lt;String, Object&gt; requestListVO = buildNameScreeningRequest(partyVO);
+            Map&lt;String, Object&gt; payload = buildPayload("API", "/apiscreening/v1", requestListVO);
+
+            String response = jc.invoke("/apiscreening/v1", Json.write(payload));
+            return parseScreeningResponse(response);
+
+        } catch (ApiException e) {
+            logger.error("Screening API error: " + e.kind(), e);
+            throw new ScreeningException("API error: " + e.getMessage(), e);
+        }
+    }
+
+    // ===== TRANSACTION SCREENING =====
+    public ScreeningResult screenTransaction(String tranId, String senderName,
+                                            String receiverName) throws Exception {
+        try {
+            JocataClient jc = JocataClientHolder.get();
+
+            Map&lt;String, Object&gt; senderVO = buildPartyVO(senderName, null, null);
+            senderVO.put("type", "sender");
+            senderVO.put("customerType", "I");
+
+            Map&lt;String, Object&gt; receiverVO = buildPartyVO(receiverName, null, null);
+            receiverVO.put("type", "receiver");
+            receiverVO.put("customerType", "I");
+
+            Map&lt;String, Object&gt; requestListVO = buildTransactionScreeningRequest(
+                tranId,
+                Arrays.asList(senderVO, receiverVO)
+            );
+            Map&lt;String, Object&gt; payload = buildPayload("TSG", "/transactionscreening/v1", requestListVO);
+
+            String response = jc.invoke("/transactionscreening/v1", Json.write(payload));
+            return parseScreeningResponse(response);
+
+        } catch (ApiException e) {
+            logger.error("Transaction screening API error: " + e.kind(), e);
+            throw new ScreeningException("API error: " + e.getMessage(), e);
+        }
+    }
+
+    // ===== HEALTH CHECK =====
+    public HealthStatus checkHealth() throws Exception {
+        try {
+            JocataClient jc = JocataClientHolder.get();
+            Map&lt;String, Object&gt; health = jc.healthCheck();
+
+            HealthStatus status = new HealthStatus();
+            status.setStatus((String) health.get("status"));
+            status.setGatewayReachable((Boolean) health.getOrDefault("gatewayReachable", false));
+            status.setEncryptOk((Boolean) health.getOrDefault("encryptOk", false));
+
+            return status;
+
+        } catch (Exception e) {
+            logger.error("Health check failed", e);
+            HealthStatus status = new HealthStatus();
+            status.setStatus("DOWN");
+            status.setError(e.getMessage());
+            return status;
+        }
+    }
+
+    // ===== HELPER METHODS =====
+    private Map&lt;String, Object&gt; buildPartyVO(String name, String dob, String nationality) {
+        Map&lt;String, Object&gt; vo = new LinkedHashMap&lt;&gt;();
+        vo.put("name", name);
+        if (dob != null) vo.put("dob", dob);
+        if (nationality != null) vo.put("nationality", nationality);
+        vo.put("customerId", UUID.randomUUID().toString());
+        return vo;
+    }
+
+    private Map&lt;String, Object&gt; buildNameScreeningRequest(Map&lt;String, Object&gt; partyVO) {
+        Map&lt;String, Object&gt; rlvo = new LinkedHashMap&lt;&gt;();
+        rlvo.put("businessUnit", "RAMP");
+        rlvo.put("subBusinessUnit", "API");
+        rlvo.put("requestType", "API");
+        rlvo.put("requestUuId", UUID.randomUUID().toString());
+        rlvo.put("requestVOList", Collections.singletonList(partyVO));
+        return rlvo;
+    }
+
+    private Map&lt;String, Object&gt; buildTransactionScreeningRequest(String tranId,
+                                                                    List&lt;Map&lt;String, Object&gt;&gt; parties) {
+        Map&lt;String, Object&gt; rlvo = new LinkedHashMap&lt;&gt;();
+        rlvo.put("businessUnit", "RAMP");
+        rlvo.put("subBusinessUnit", "API");
+        rlvo.put("requestType", "TSG");
+        rlvo.put("tranId", tranId);
+        rlvo.put("requestVOList", parties);
+        return rlvo;
+    }
+
+    private Map&lt;String, Object&gt; buildPayload(String requestType, String path,
+                                               Map&lt;String, Object&gt; requestListVO) {
+        Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();
+        Map&lt;String, Object&gt; innerMap = Collections.singletonMap("requestListVO", requestListVO);
+        Map&lt;String, Object&gt; payloadMap = Collections.singletonMap("listMatchingPayload", innerMap);
+        payload.put("rampRequest", payloadMap);
+        return payload;
+    }
+
+    private ScreeningResult parseScreeningResponse(String jsonResponse) throws Exception {
+        Map&lt;String, Object&gt; responseMap = Json.parseObject(jsonResponse);
+        Map&lt;String, Object&gt; rampResponse = (Map) responseMap.get("rampResponse");
+
+        ScreeningResult result = new ScreeningResult();
+        result.setStatusCode((String) rampResponse.get("statusCode"));
+        result.setStatusMessage((String) rampResponse.get("statusMessage"));
+
+        List&lt;Map&lt;String, Object&gt;&gt; responseList =
+            (List) ((Map) rampResponse.get("listMatchingResponse")).get("responseListVO");
+
+        if (responseList != null && !responseList.isEmpty()) {
+            Map&lt;String, Object&gt; first = responseList.get(0);
+            result.setMatch("Y".equals(first.get("matchFlag")));
+            result.setMatchCount((Integer) first.getOrDefault("matchCount", 0));
+            result.setMatches((List) first.get("matches"));
+        }
+
+        return result;
+    }
+}
+                </div>
+            </div>
+        </div>
+
+        <!-- PROJECT-SPECIFIC USAGE -->
+        <div class="section" id="projects">
+            <h2>🏢 Project-Specific Usage Examples</h2>
+
+            <h3>Project 1: Customer Onboarding System</h3>
+
+            <button class="collapsible-header">
+                <span>Integration in Onboarding Flow</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="collapsible-content">
+                <div class="code-block java">
+@RestController
+@RequestMapping("/api/onboarding")
+public class OnboardingController {
+
+    @Autowired
+    private ComplianceScreeningService screeningService;
+
+    @PostMapping("/verify-customer")
+    public ResponseEntity&lt;?&gt; verifyCustomer(@RequestBody CustomerDto dto)
+            throws Exception {
+
+        // 1. Screen customer
+        ScreeningResult result = screeningService.screenName(
+            dto.getFullName(),
+            dto.getDob(),
+            dto.getNationality()
+        );
+
+        // 2. Check result
+        if (result.isMatch()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                new ErrorResponse("Screening match found. Please contact compliance team.")
+            );
+        }
+
+        // 3. Proceed with onboarding
+        Customer customer = new Customer();
+        customer.setName(dto.getFullName());
+        customer.setScreeningStatus("CLEARED");
+        customer.setScreeningDate(new Date());
+        customerRepository.save(customer);
+
+        return ResponseEntity.ok(new OnboardingResponse("Onboarding approved"));
+    }
+}
+                </div>
+            </div>
+
+            <h3>Project 2: Money Transfer System</h3>
+
+            <button class="collapsible-header">
+                <span>Transaction Screening Before Transfer</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="collapsible-content">
+                <div class="code-block java">
+@Service
+public class MoneyTransferService {
+
+    @Autowired
+    private ComplianceScreeningService screeningService;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Transactional
+    public TransferResult initiateTransfer(TransferRequest request) throws Exception {
+
+        // 1. Screen transaction (sender and receiver)
+        ScreeningResult result = screeningService.screenTransaction(
+            request.getTransactionId(),
+            request.getSenderName(),
+            request.getReceiverName()
+        );
+
+        // 2. Create transaction record
+        Transaction txn = new Transaction();
+        txn.setTransactionId(request.getTransactionId());
+        txn.setAmount(request.getAmount());
+        txn.setScreeningStatus(result.isMatch() ? "FLAGGED" : "CLEARED");
+
+        if (result.isMatch()) {
+            txn.setStatus("ON_HOLD");
+            txn.setReason("Compliance screening match");
+            transactionRepository.save(txn);
+
+            // Alert compliance team
+            notifyCompliance("Transaction flagged: " + txn.getTransactionId());
+
+            return TransferResult.BLOCKED("Transaction on hold pending review");
+        } else {
+            txn.setStatus("PROCESSING");
+            transactionRepository.save(txn);
+
+            // Process transfer
+            processTransfer(request);
+
+            return TransferResult.SUCCESS("Transfer processed");
+        }
+    }
+}
+                </div>
+            </div>
+
+            <h3>Project 3: Periodic Compliance Batch</h3>
+
+            <button class="collapsible-header">
+                <span>Batch Screening Job</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="collapsible-content">
+                <div class="code-block java">
+@Component
+public class ComplianceBatchJob {
+
+    @Autowired
+    private ComplianceScreeningService screeningService;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Scheduled(cron = "0 0 2 * * *")  // Run at 2 AM daily
+    public void runDailyCompliaceBatch() {
+        logger.info("Starting daily compliance batch screening");
+
+        List&lt;Customer&gt; unscreenedCustomers =
+            customerRepository.findByScreeningStatus("PENDING");
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (Customer customer : unscreenedCustomers) {
+            try {
+                ScreeningResult result = screeningService.screenName(
+                    customer.getFullName(),
+                    customer.getDob(),
+                    customer.getNationality()
+                );
+
+                customer.setScreeningStatus(result.isMatch() ? "MATCHED" : "CLEAR");
+                customer.setScreeningDate(new Date());
+                customer.setScreeningResult(Json.write(result));
+                customerRepository.save(customer);
+
+                if (result.isMatch()) {
+                    notifyComplianceTeam(customer, result);
+                }
+
+                successCount++;
+            } catch (Exception e) {
+                logger.error("Screening failed for customer: " + customer.getId(), e);
+                customer.setScreeningStatus("ERROR");
+                customerRepository.save(customer);
+                failureCount++;
+            }
+        }
+
+        logger.info("Batch complete. Success: " + successCount + ", Failure: " + failureCount);
+    }
+
+    private void notifyComplianceTeam(Customer customer, ScreeningResult result) {
+        // Send email alert
+        String subject = "COMPLIANCE ALERT: Screening Match";
+        String body = "Customer " + customer.getFullName() + " has matches:\n" +
+                     result.getMatches();
+        emailService.send("compliance@bank.com", subject, body);
+    }
+}
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <p><strong>Jocata API Integration Guide</strong></p>
+            <p>Complete reference for integrating Jocata compliance screening APIs</p>
+            <p>IDFC LastMile & Multi-Project Implementation</p>
+            <p style="margin-top: 15px; font-style: italic;">
+                ⚠️ Remember: The test page (jocataApiTest.jsp) is for development/testing only.
+                Remove or restrict access before production deployment.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Collapsible functionality
+        document.querySelectorAll('.collapsible-header').forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                if (content && content.classList.contains('collapsible-content')) {
+                    content.classList.toggle('show');
+                }
+            });
+        });
+
+        // Print functionality
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

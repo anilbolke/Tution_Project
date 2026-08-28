@@ -1,0 +1,45 @@
+1. Popup on website load  - 2 images before website loads
+2. Gurukul Highlight - client will provide
+3. Light Green and Yellow Colour - pick color from broucher
+4. 3 Years Course add -client will provide
+5. Fees Update -client will provide
+6. Hide Terms and Conditions -add tthis section in footer
+7. Hiden Refund Policy -add
+8. Add School Name in inquiry and admission form - chnages in portal
+9. Add interested course in inquiry and admission form - add\
+10. Career Options in Menu - tab to add -client will provide
+11. Gallery - tab to add 
+12. Demo Lectures Video-client will provide
+
+
+
+
+
+
+
+http://localhost:8080/Tution_Project/inquiries  - need view columns selection if user select perticular columns to view and hide.
+
+
+1. Bulk Lead Add  - Done
+2. Category of Lead - lead type 
+3. Allot lead to counselors -  - Done
+4. Dashboard Screenshot - Done
+5. Revenue and Admission Target to Counselors - need to develop
+6. Filter of topper students from all schools - need to develop
+7. All exams paid Hamse and all - need to develop
+8. Exam discount in percentage and amount -Done
+9. Permanent left out students due to fees defaulter - need to develop
+10. Expenses management and voucher management - need to develop
+11. Work order generation for above 10000 Amount.- need to develop
+12. PDC Cheque Notification to accounts - need to develop
+13. PDC data entry against fees mapped with student.- need to develop
+14. Upload Scan copy of Cheque- need to develop
+
+
+candidateds fee colletion management after student uploded and befire take exam.
+
+Download PDF Stop
+
+empoyee attendance HR
+
+HR MODULE

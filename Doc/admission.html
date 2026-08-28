@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admission – Havellsson NEET Samrat</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green:        #1A7A4A;
+    --green-dark:   #135C37;
+    --green-mid:    #1E8F55;
+    --green-light:  #E8F7EF;
+    --green-pale:   #F0FAF4;
+    --accent:       #F4C542;
+    --bg:           #F2FAF5;
+    --text:         #0F2518;
+    --muted:        #5A7364;
+    --border:       #B8DECA;
+    --white:        #FFFFFF;
+    --success:      #15803D;
+    --radius:       10px;
+    --shadow:       0 4px 24px rgba(26,122,74,0.10);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-text-size-adjust: 100%; }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--green-dark);
+    padding: 0 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; min-width: 0; }
+  .logo-icon {
+    width: 38px; height: 38px; min-width: 38px; background: var(--accent); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 20px; color: var(--green-dark); font-weight: 900;
+  }
+  .logo-text { color: #fff; min-width: 0; }
+  .logo-text .brand {
+    display: block; font-size: 14px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .logo-text .sub { display: none; }
+  @media(min-width:600px){
+    header { padding: 0 1.5rem; height: 64px; }
+    .logo-icon { width: 42px; height: 42px; min-width: 42px; }
+    .logo-text .brand { font-size: 15px; }
+    .logo-text .sub { display: block; font-size: 11px; color: #8ECFAC; margin-top: 1px; }
+  }
+  nav { display: flex; gap: 4px; flex-shrink: 0; }
+  nav a {
+    color: #8ECFAC; font-size: 12px; font-weight: 600; text-decoration: none;
+    padding: 6px 10px; border-radius: 6px; white-space: nowrap; transition: all .2s;
+  }
+  nav a:hover  { color: var(--accent); }
+  nav a.active { color: var(--green-dark); background: var(--accent); }
+  @media(min-width:480px){ nav a { font-size: 13px; padding: 6px 14px; } }
+
+  /* ─── RIBBON ─── */
+  .neet-ribbon {
+    background: var(--accent); color: var(--green-dark);
+    font-size: 11px; font-weight: 800; padding: 5px 12px;
+    text-align: center; letter-spacing: 0.8px;
+  }
+
+  /* ─── HERO ─── */
+  .hero-strip {
+    background: linear-gradient(120deg, var(--green-dark) 0%, var(--green-mid) 100%);
+    padding: 26px 1.25rem 22px; text-align: center;
+  }
+  .eyebrow {
+    display: inline-block; background: var(--accent); color: var(--green-dark);
+    font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 3px 13px; border-radius: 20px; margin-bottom: 10px;
+  }
+  .hero-strip h1 {
+    font-family: 'Playfair Display', serif; font-size: 22px; color: #fff;
+    margin-bottom: 6px; line-height: 1.2;
+  }
+  .hero-strip p { color: #A8D9BC; font-size: 13px; line-height: 1.55; }
+  @media(min-width:600px){
+    .hero-strip h1 { font-size: 27px; }
+    .hero-strip p  { font-size: 14px; max-width: 460px; margin: 0 auto; }
+  }
+
+  .hero-strip .brand-banner{display:inline-block;height:50px;width:auto;background:#fff;border-radius:8px;padding:6px 16px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.25);}
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-wrap {
+    background: var(--white); padding: 12px 1rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07); overflow-x: auto;
+  }
+  .steps {
+    display: flex; align-items: center; min-width: max-content; margin: 0 auto;
+    width: fit-content;
+  }
+  .step { display: flex; align-items: center; gap: 7px; }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .step-num.done    { background: var(--success); color: #fff; }
+  .step-num.active  { background: var(--green); color: #fff; }
+  .step-num.pending { background: var(--border); color: var(--muted); }
+  .step-label { font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .step-label.done    { color: var(--success); }
+  .step-label.active  { color: var(--green); }
+  .step-label.pending { color: var(--muted); }
+  .step-line { width: 28px; height: 2px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+  .step-line.done { background: var(--success); }
+  @media(min-width:480px){
+    .step-num { width: 28px; height: 28px; font-size: 12px; }
+    .step-label { font-size: 12px; }
+    .step-line { width: 36px; }
+  }
+
+  /* ─── PAGE BODY ─── */
+  .page-body { max-width: 820px; margin: 0 auto; padding: 18px 1rem 50px; }
+  @media(min-width:600px){ .page-body { padding: 28px 1.5rem 60px; } }
+
+  /* ─── SECTION CARD ─── */
+  .section-card {
+    background: var(--white); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  @media(min-width:560px){ .section-card { padding: 24px 28px; margin-bottom: 20px; } }
+
+  .section-header {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 18px; padding-bottom: 14px;
+    border-bottom: 1.5px solid var(--green-light);
+  }
+  .section-num {
+    width: 30px; height: 30px; min-width: 30px; background: var(--green); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 700;
+  }
+  .section-header h2 { font-size: 15px; font-weight: 700; color: var(--green-dark); line-height: 1.3; }
+  .section-header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ─── FIELDS ─── */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--green-dark); margin-bottom: 5px; }
+  .req { color: #E05A2B; margin-left: 2px; }
+  input, select, textarea {
+    width: 100%; padding: 11px 13px; font-size: 15px; /* 15px stops iOS auto-zoom */
+    font-family: 'Inter', sans-serif;
+    border: 1.5px solid var(--border); border-radius: 7px; color: var(--text);
+    background: var(--green-pale); transition: border-color .2s, box-shadow .2s; outline: none;
+    -webkit-appearance: none; appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green); box-shadow: 0 0 0 3px rgba(26,122,74,0.13); background: #fff;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A7364' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px;
+    background-color: var(--green-pale);
+  }
+  .field-row { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media(min-width:500px){ .field-row { grid-template-columns: 1fr 1fr; } }
+
+  /* ─── SUBJECT CHIPS ─── */
+
+
+
+  /* ─── PHOTO UPLOAD ─── */
+  .photo-upload-area {
+    border: 2px dashed var(--border); border-radius: 8px;
+    padding: 24px 16px; text-align: center; cursor: pointer;
+    background: var(--green-pale); transition: border-color .2s, background .2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .photo-upload-area:active { background: var(--green-light); }
+  .photo-upload-area input { display: none; }
+  .photo-icon  { font-size: 30px; margin-bottom: 6px; }
+  .photo-upload-area p      { font-size: 12px; color: var(--muted); }
+  .photo-upload-area strong { font-size: 14px; color: var(--green-dark); display: block; margin-bottom: 4px; }
+  #previewImg {
+    width: 80px; height: 80px; border-radius: 8px; object-fit: cover;
+    display: none; margin: 10px auto 0; border: 2px solid var(--green);
+  }
+
+  /* ─── FEE TABLE ─── */
+  /* ─── FEE FIXED BLOCK ─── */
+  .fee-fixed-block {
+    background: var(--green-pale); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+  }
+  .fee-fixed-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+  .fee-fixed-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text); padding: 5px 0; }
+  .fee-fixed-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+  .fee-val { font-weight: 700; color: var(--green-dark); }
+
+  /* ─── GRAND TOTAL BOX ─── */
+  .grand-total-box {
+    background: var(--green-dark); border-radius: 10px;
+    padding: 18px 20px; text-align: center; margin-bottom: 22px;
+  }
+  .gt-label  { font-size: 11px; color: #8ECFAC; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .gt-amount { font-size: 36px; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+  .gt-break  { font-size: 12px; color: #A8D9BC; }
+
+  /* ─── SLAB SELECTOR ─── */
+  .slab-label { font-size: 13px; font-weight: 600; color: var(--green-dark); margin-bottom: 10px; }
+  .slab-req   { color: #E05A2B; }
+  .slab-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  @media(min-width:560px){ .slab-grid { grid-template-columns: repeat(4,1fr); } }
+
+  .slab-card { position: relative; }
+  .slab-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .slab-card label {
+    display: block; padding: 14px 10px 12px; text-align: center;
+    border: 2px solid var(--border); border-radius: 10px; cursor: pointer;
+    background: var(--green-pale); transition: all .2s; position: relative; overflow: hidden;
+    -webkit-tap-highlight-color: transparent; min-height: 118px;
+  }
+  .slab-card input:checked + label {
+    border-color: var(--green); background: var(--green-light);
+    box-shadow: 0 0 0 3px rgba(26,122,74,0.14);
+  }
+  .slab-card label:hover { border-color: var(--green-mid); }
+  .slab-badge {
+    position: absolute; top: 0; right: 0;
+    background: var(--green); color: #fff;
+    font-size: 9px; font-weight: 800; padding: 3px 8px;
+    border-radius: 0 8px 0 8px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .slab-badge.best { background: var(--accent); color: var(--green-dark); }
+  .slab-name   { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .slab-card input:checked + label .slab-name { color: var(--green-dark); }
+  .slab-amount { font-size: 17px; font-weight: 800; color: var(--green-dark); line-height: 1; }
+  .slab-amount span { font-size: 11px; font-weight: 500; color: var(--muted); }
+  .slab-detail { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .slab-saving { font-size: 11px; font-weight: 700; margin-top: 5px; }
+  .slab-saving.save    { color: var(--success); }
+  .slab-saving.no-save { color: var(--muted); }
+
+  /* ─── INSTALMENT SECTION ─── */
+  #instalmentSection { animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
+
+  .inst-header { margin-bottom: 14px; }
+  .inst-title    { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+  .inst-subtitle { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .inst-summary-strip {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+    background: var(--green-dark); border-radius: 10px; padding: 14px 12px;
+    margin-bottom: 16px; text-align: center;
+  }
+  .inst-strip-item { border-right: 1px solid rgba(255,255,255,0.1); }
+  .inst-strip-item:last-child { border-right: none; }
+  .ist-val { font-size: 16px; font-weight: 800; color: #fff; line-height: 1.2; }
+  .ist-val.green { color: var(--accent); }
+  .ist-lbl { font-size: 10px; color: #8ECFAC; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 3px; }
+
+  .inst-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+  .inst-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 380px; }
+  .inst-table th {
+    background: var(--green); color: #fff; padding: 10px 12px;
+    text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .inst-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .inst-table tr:last-child td { border-bottom: none; }
+  .inst-table tr:nth-child(even) td { background: var(--green-pale); }
+  .inst-num  { font-weight: 700; color: var(--green-dark); }
+  .inst-amt  { font-weight: 700; color: var(--green-dark); white-space: nowrap; }
+  .inst-due  { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .inst-first td { background: #FFFBEA !important; font-weight: 600; }
+
+  .inst-note {
+    margin-top: 12px; background: var(--green-pale); border-left: 3px solid var(--green);
+    border-radius: 0 8px 8px 0; padding: 10px 14px;
+    font-size: 12px; color: var(--muted); line-height: 1.65;
+  }
+
+  /* ─── DECLARATION ─── */
+  .declaration-box {
+    background: var(--green-pale); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; font-size: 13px; color: var(--muted); line-height: 1.7;
+  }
+  .check-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; }
+  .check-row input[type="checkbox"] { width: 18px; height: 18px; min-width: 18px; margin-top: 1px; accent-color: var(--green); }
+  .check-row label { font-size: 13px; color: var(--text); font-weight: 500; cursor: pointer; line-height: 1.5; }
+
+  /* ─── SUBMIT ─── */
+  .submit-area { text-align: center; margin-top: 20px; }
+  .btn-submit {
+    width: 100%; max-width: 420px; padding: 15px; background: var(--green); color: #fff;
+    border: none; border-radius: 8px; font-size: 16px; font-weight: 700;
+    cursor: pointer; font-family: 'Inter', sans-serif; transition: background .2s;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .btn-submit:hover  { background: var(--green-dark); }
+  .btn-submit:active { opacity: .88; }
+  .submit-note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+  /* ─── SUCCESS SCREEN ─── */
+  .success-screen { display: none; text-align: center; padding: 48px 20px; }
+  .success-icon  { font-size: 56px; margin-bottom: 16px; }
+  .success-screen h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--green-dark); margin-bottom: 10px; }
+  .success-screen p  { font-size: 14px; color: var(--muted); max-width: 360px; margin: 0 auto 22px; line-height: 1.65; }
+  .admission-id {
+    display: inline-block; background: var(--green-light); border: 2px solid var(--green);
+    border-radius: 10px; padding: 14px 28px; font-size: 22px; font-weight: 700;
+    color: var(--green-dark); letter-spacing: 2px; margin-bottom: 22px;
+  }
+  .admission-id small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; letter-spacing: 0; margin-bottom: 4px; }
+  .btn-secondary {
+    padding: 11px 28px; background: transparent; color: var(--green-dark);
+    border: 2px solid var(--green-dark); border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .btn-secondary:hover { background: var(--green-dark); color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">H</div>
+    <div class="logo-text">
+      <span class="brand">Havellsson NEET Samrat</span>
+      <span class="sub">Expert Coaching · 11th &amp; 12th Science</span>
+    </div>
+  </a>
+  <nav>
+    <a href="inquiry.html">Inquiry</a>
+    <a href="admission.html" class="active">Admission</a>
+  </nav>
+</header>
+
+<div class="neet-ribbon">🏆 Havellsson NEET Samrat — India's Trusted NEET Coaching</div>
+
+<div class="hero-strip">
+  <img class="brand-banner" src="data:image/webp;base64,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" alt="Havellsson" width="250" height="50">
+  <div class="eyebrow">Step 2 of 2 — Admission</div>
+  <h1>Complete Your Admission</h1>
+  <p>Fill the form below to secure your seat. Takes less than 5 minutes.</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="steps">
+    <div class="step">
+      <div class="step-num done">✓</div>
+      <div class="step-label done">Inquiry</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step">
+      <div class="step-num active">2</div>
+      <div class="step-label active">Admission</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-num pending">3</div>
+      <div class="step-label pending">Fee Payment</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-num pending">4</div>
+      <div class="step-label pending">Confirmed</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+<div id="admissionForm">
+
+  <!-- 1 Student Info -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <h2>Student Information</h2>
+        <p>Academic &amp; personal details</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Full Name <span class="req">*</span></label>
+      <input type="text" id="fullName" placeholder="e.g. Priya Deshmukh" autocomplete="name"/>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Date of Birth <span class="req">*</span></label>
+        <input type="date" id="dob"/>
+      </div>
+      <div class="field">
+        <label>Gender <span class="req">*</span></label>
+        <select id="gender">
+          <option value="">Select</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Class <span class="req">*</span></label>
+        <select id="admClass">
+          <option value="">Select class</option>
+          <option value="11sci">11th – Science (PCB)</option>
+          <option value="11pcm">11th – Science (PCM)</option>
+          <option value="12sci">12th – Science (PCB)</option>
+          <option value="12pcm">12th – Science (PCM)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Board <span class="req">*</span></label>
+        <select id="admBoard">
+          <option value="">Select board</option>
+          <option>Maharashtra HSC Board</option>
+          <option>CBSE</option>
+          <option>ICSE</option>
+          <option>IB</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Previous School</label>
+        <input type="text" id="school" placeholder="School attended last year"/>
+      </div>
+      <div class="field">
+        <label>10th % / CGPA</label>
+        <input type="text" id="marks" placeholder="e.g. 88% or 8.8 CGPA" inputmode="decimal"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 Contact -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <h2>Contact &amp; Parent Details</h2>
+        <p>For updates, schedule &amp; fee receipts</p>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Student Mobile <span class="req">*</span></label>
+        <input type="tel" id="stuMobile" placeholder="10-digit number" maxlength="10" inputmode="numeric" autocomplete="tel"/>
+      </div>
+      <div class="field">
+        <label>Alternate Mobile <span class="req">*</span></label>
+        <input type="tel" id="altMobile" placeholder="10-digit number" maxlength="10" inputmode="numeric"/>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Student Email</label>
+      <input type="email" id="stuEmail" placeholder="For DPPs &amp; timetable" autocomplete="email"/>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Parent / Guardian Name <span class="req">*</span></label>
+        <input type="text" id="parentName" placeholder="Full name"/>
+      </div>
+      <div class="field">
+        <label>Parent Mobile <span class="req">*</span></label>
+        <input type="tel" id="parentMobile" placeholder="10-digit number" maxlength="10" inputmode="numeric"/>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Residential Address</label>
+      <input type="text" id="address" placeholder="Area / Society name is enough" autocomplete="street-address"/>
+    </div>
+  </div>
+
+  <!-- 3 Photo -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <h2>Student Photo</h2>
+        <p>For ID card — passport size, plain background</p>
+      </div>
+    </div>
+    <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+      <input type="file" id="photoInput" accept="image/*" onchange="previewPhoto(event)"/>
+      <div class="photo-icon">📷</div>
+      <strong>Tap to upload photo</strong>
+      <p>JPG or PNG · max 2 MB</p>
+      <img id="previewImg" src="" alt="Preview"/>
+    </div>
+  </div>
+
+  <!-- 4 Fee & Payment Plan -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <h2>Fee &amp; Payment Plan</h2>
+        <p>Choose how you'd like to pay — one-time fees are fixed</p>
+      </div>
+    </div>
+
+    <!-- One-time fixed fees -->
+    <div class="fee-fixed-block">
+      <div class="fee-fixed-title">One-Time Charges (Mandatory)</div>
+      <div class="fee-fixed-row"><span>Registration Fee</span><span class="fee-val">₹500</span></div>
+      <div class="fee-fixed-row"><span>Study Material &amp; DPPs</span><span class="fee-val">₹800</span></div>
+      <div class="fee-fixed-row"><span>Monthly Tuition Fee</span><span class="fee-val">₹3,000 / month</span></div>
+    </div>
+
+    <!-- Grand total display -->
+    <div class="grand-total-box">
+      <div class="gt-label">Total Course Fee (12 Months)</div>
+      <div class="gt-amount">₹37,300</div>
+      <div class="gt-break">₹1,300 one-time + ₹3,000 × 12 months</div>
+    </div>
+
+    <!-- Slab selector -->
+    <div class="slab-label">Select Your Payment Slab <span class="slab-req">*</span></div>
+    <div class="slab-grid" id="slabGrid">
+
+      <div class="slab-card">
+        <input type="radio" name="slab" id="sl1" value="monthly"/>
+        <label for="sl1">
+          <div class="slab-name">Monthly</div>
+          <div class="slab-amount">₹3,000<span>/mo</span></div>
+          <div class="slab-detail">12 instalments</div>
+          <div class="slab-saving no-save">No discount</div>
+        </label>
+      </div>
+
+      <div class="slab-card">
+        <input type="radio" name="slab" id="sl2" value="quarterly"/>
+        <label for="sl2">
+          <div class="slab-name">Quarterly</div>
+          <div class="slab-amount">₹2,700<span>/mo</span></div>
+          <div class="slab-detail">4 instalments</div>
+          <div class="slab-saving save">Save ₹900</div>
+        </label>
+      </div>
+
+      <div class="slab-card">
+        <input type="radio" name="slab" id="sl3" value="halfyearly"/>
+        <label for="sl3">
+          <div class="slab-badge">Popular</div>
+          <div class="slab-name">Half-Yearly</div>
+          <div class="slab-amount">₹2,500<span>/mo</span></div>
+          <div class="slab-detail">2 instalments</div>
+          <div class="slab-saving save">Save ₹3,000</div>
+        </label>
+      </div>
+
+      <div class="slab-card">
+        <input type="radio" name="slab" id="sl4" value="yearly"/>
+        <label for="sl4">
+          <div class="slab-badge best">Best Value</div>
+          <div class="slab-name">Full Year</div>
+          <div class="slab-amount">₹2,300<span>/mo</span></div>
+          <div class="slab-detail">1 instalment</div>
+          <div class="slab-saving save">Save ₹8,400</div>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- Instalment schedule (shown after slab pick) -->
+    <div id="instalmentSection" style="display:none">
+
+      <div class="inst-header">
+        <div class="inst-title">📋 Your Payment Schedule</div>
+        <div class="inst-subtitle" id="instSubtitle"></div>
+      </div>
+
+      <div class="inst-summary-strip">
+        <div class="inst-strip-item">
+          <div class="ist-val" id="istTotalAmt"></div>
+          <div class="ist-lbl">Total Payable</div>
+        </div>
+        <div class="inst-strip-item">
+          <div class="ist-val" id="istInstalments"></div>
+          <div class="ist-lbl">Instalments</div>
+        </div>
+        <div class="inst-strip-item">
+          <div class="ist-val green" id="istSaving"></div>
+          <div class="ist-lbl">You Save</div>
+        </div>
+      </div>
+
+      <div class="inst-table-wrap">
+        <table class="inst-table">
+          <thead>
+            <tr><th>#</th><th>Instalment</th><th>Covers</th><th>Amount</th><th>Due Date</th></tr>
+          </thead>
+          <tbody id="instTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="inst-note" id="instNote"></div>
+    </div>
+
+  </div>
+
+  <!-- 5 Declaration -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div>
+        <h2>Declaration</h2>
+        <p>Please read and confirm before submitting</p>
+      </div>
+    </div>
+    <div class="declaration-box">
+      I declare that all information provided is true and accurate. I agree to abide by the rules of Havellsson NEET Samrat,
+      attend classes regularly, and complete all assigned tests and DPPs. I understand that fees paid are non-refundable
+      unless the batch is cancelled by the institute. I consent to receive SMS/WhatsApp updates regarding schedule and results.
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="declare"/>
+      <label for="declare">I have read and agree to the declaration and <a href="#" style="color:var(--green)">fee policy</a> of Havellsson NEET Samrat.</label>
+    </div>
+  </div>
+
+  <div class="submit-area">
+    <button class="btn-submit" onclick="submitAdmission()">Submit Admission Form →</button>
+    <p class="submit-note">You'll receive your admission number by SMS within a few minutes.</p>
+  </div>
+
+</div><!-- #admissionForm -->
+
+<!-- SUCCESS -->
+<div class="success-screen section-card" id="successScreen">
+  <div class="success-icon">🎉</div>
+  <h2>Admission Submitted!</h2>
+  <p>Your form is received by Havellsson NEET Samrat. Save your admission number for future reference.</p>
+  <div class="admission-id">
+    <small>Your Admission Number</small>
+    <span id="admNumDisplay">HNS-2425-0000</span>
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6">
+    Our team will call within 24 hours to confirm your batch and share payment details.<br/>
+    Please carry this number when visiting the centre.
+  </p>
+  <button class="btn-secondary" onclick="window.location.reload()">Fill another form</button>
+</div>
+
+</div><!-- .page-body -->
+
+<script>
+const REG_FEE      = 500;
+const MATERIAL_FEE = 800;
+const ONE_TIME     = REG_FEE + MATERIAL_FEE;
+
+const SLABS = {
+  monthly:    { label: 'Monthly',     months: 1,  perMonth: 3000 },
+  quarterly:  { label: 'Quarterly',   months: 3,  perMonth: 2700 },
+  halfyearly: { label: 'Half-Yearly', months: 6,  perMonth: 2500 },
+  yearly:     { label: 'Full Year',   months: 12, perMonth: 2300 },
+};
+
+document.querySelectorAll('[name="slab"]').forEach(radio => {
+  radio.addEventListener('change', function(){ updateSlabSummary(this.value); });
+});
+
+function fmt(n){ return '₹' + n.toLocaleString('en-IN'); }
+
+function updateSlabSummary(key){
+  const s   = SLABS[key];
+  const tut = s.perMonth * s.months;
+  const total = ONE_TIME + tut;
+  const saved = (3000 - s.perMonth) * s.months;
+
+  const rows = document.getElementById('feeSummaryRows');
+  rows.innerHTML = `
+    <div class="sum-row"><span>Registration Fee</span><span>${fmt(REG_FEE)}</span></div>
+    <div class="sum-row"><span>Study Material &amp; DPPs</span><span>${fmt(MATERIAL_FEE)}</span></div>
+    <div class="sum-row"><span>Tuition (${s.label} — ${s.months} mo × ${fmt(s.perMonth)})</span><span>${fmt(tut)}</span></div>
+  `;
+  document.getElementById('feeTotalDue').textContent = fmt(total);
+  document.getElementById('feeNote').textContent =
+    saved > 0
+      ? `🎉 You save ${fmt(saved)} by choosing the ${s.label} plan compared to paying monthly.`
+      : 'Pay month-by-month with full flexibility.';
+
+  document.getElementById('feeSummaryBox').style.display = 'block';
+}
+
+function previewPhoto(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('previewImg');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitAdmission(){
+  const fullName   = document.getElementById('fullName').value.trim();
+  const dob        = document.getElementById('dob').value;
+  const gender     = document.getElementById('gender').value;
+  const cls        = document.getElementById('admClass').value;
+  const board      = document.getElementById('admBoard').value;
+  const stuMob     = document.getElementById('stuMobile').value.trim();
+  const altMob     = document.getElementById('altMobile').value.trim();
+  const parentName = document.getElementById('parentName').value.trim();
+  const parentMob  = document.getElementById('parentMobile').value.trim();
+  const declared   = document.getElementById('declare').checked;
+
+  if(!fullName)    { alert('Please enter the student full name.'); return; }
+  if(!dob)         { alert('Please enter date of birth.'); return; }
+  if(!gender)      { alert('Please select gender.'); return; }
+  if(!cls)         { alert('Please select the class.'); return; }
+  if(!board)       { alert('Please select the board.'); return; }
+  if(!/^[6-9]\d{9}$/.test(stuMob))  { alert('Please enter a valid student mobile number.'); return; }
+  if(!/^[6-9]\d{9}$/.test(altMob))  { alert('Please enter a valid alternate mobile number.'); return; }
+  if(!parentName)  { alert('Please enter parent/guardian name.'); return; }
+  if(!/^[6-9]\d{9}$/.test(parentMob)) { alert('Please enter a valid parent mobile number.'); return; }
+  if(!declared)    { alert('Please read and accept the declaration.'); return; }
+
+  const slab = document.querySelector('[name="slab"]:checked');
+  if(!slab)        { alert('Please select a payment plan.'); return; }
+
+  const admNum = 'HNS-2425-' + String(Math.floor(1000 + Math.random() * 9000));
+  document.getElementById('admNumDisplay').textContent = admNum;
+  document.getElementById('admissionForm').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Build output
+/build/
+**/*.class
+
+# Eclipse workspace-local (not the shared .project/.classpath)
+.settings/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Credentials — copy the matching *.example file and fill in real values locally
+src/main/java/com/tution/util/DBConnection.java
+src/main/java/com/tution/util/WhatsAppConfig.java
+src/main/java/com/tution/util/RazorpayConfig.java
+
+# Runtime uploads (student photos, ID proofs, receipts — not source, may hold PII)
+src/main/webapp/uploads/
+
+# OS / Office junk
+$null
+~$*
+Thumbs.db
+.DS_Store

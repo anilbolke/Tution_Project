@@ -1,0 +1,65 @@
+==============================================================
+WhatsApp Templates - Havellsson NEET Samrat
+Language: en   |   Category: UTILITY
+==============================================================
+
+
+--------------------------------------------------------------
+1. inquiry_received
+   {{1}} = student name
+   {{2}} = class interested
+--------------------------------------------------------------
+
+Hello {{1}}! 🎓
+
+Thank you for your interest in Havellsson NEET Samrat. We've received your inquiry for {{2}}.
+
+Our counselor will call you within 24 hours with batch details, fees, and answers to your questions.
+
+— Team Havellsson NEET Samrat
+
+
+--------------------------------------------------------------
+2. admission_confirmed
+   {{1}} = student name
+   {{2}} = admission number
+   {{3}} = class
+   {{4}} = fee plan
+--------------------------------------------------------------
+
+Congratulations {{1}}! 🎉
+
+Your admission to Havellsson NEET Samrat is confirmed.
+
+Admission No: {{2}}
+Class: {{3}}
+Fee Plan: {{4}}
+
+Please save your admission number for all future reference. Your batch schedule will be shared shortly.
+
+Welcome to the Havellsson family! 🏆
+— Team Havellsson NEET Samrat
+
+
+--------------------------------------------------------------
+3. payment_received
+   {{1}} = student name
+   {{2}} = receipt number
+   {{3}} = amount paid
+   {{4}} = date
+   {{5}} = payment mode
+   {{6}} = balance due
+--------------------------------------------------------------
+
+Payment Received ✅
+
+Dear {{1}}, we've successfully received your fee payment.
+
+Receipt No: {{2}}
+Amount Paid: {{3}}
+Date: {{4}}
+Mode: {{5}}
+Balance Due: {{6}}
+
+Please keep this message as your payment confirmation. Thank you!
+— Team Havellsson NEET Samrat
