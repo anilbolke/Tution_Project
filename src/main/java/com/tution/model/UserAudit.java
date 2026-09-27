@@ -14,6 +14,7 @@ public class UserAudit {
     public static final String PASSWORD = "PASSWORD";
     public static final String ENABLE   = "ENABLE";
     public static final String DISABLE  = "DISABLE";
+    public static final String MANAGER  = "MANAGER";   // reports_to changed
 
     private int     auditId;
     private int     targetUserId;
@@ -34,6 +35,7 @@ public class UserAudit {
             case PASSWORD: return "Password reset";
             case ENABLE:   return "Switched on";
             case DISABLE:  return "Switched off";
+            case MANAGER:  return "Reports to changed";
             default:       return action;
         }
     }

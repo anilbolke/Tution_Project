@@ -47,15 +47,26 @@ public class MasterDAO {
      * counselling and no separate counsellor account.
      */
     public Map<Integer, String> counsellors() throws SQLException {
+        return counsellors(null);
+    }
+
+    /**
+     * As {@link #counsellors()}, limited to a scope (Scope.of(user)): a
+     * counsellor gets themself, an ABM their team, null gets everyone.
+     */
+    public Map<Integer, String> counsellors(Integer scope) throws SQLException {
         Map<Integer, String> map = new LinkedHashMap<>();
         String sql = "SELECT user_id, full_name FROM users "
-                   + "WHERE is_active = 1 AND role IN ('COUNSELLOR','ADMIN') "
-                   + "ORDER BY role = 'COUNSELLOR' DESC, full_name";
+                   + "WHERE is_active = 1 AND role IN ('COUNSELLOR','ABM','ADMIN') "
+                   + (scope == null ? "" : "AND " + Scope.teamOf("user_id") + " ")
+                   + "ORDER BY role IN ('COUNSELLOR','ABM') DESC, full_name";
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                map.put(rs.getInt("user_id"), rs.getString("full_name"));
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            if (scope != null) ps.setInt(1, scope);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    map.put(rs.getInt("user_id"), rs.getString("full_name"));
+                }
             }
         }
         return map;

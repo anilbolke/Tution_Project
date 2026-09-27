@@ -190,6 +190,73 @@ public class HrDAO {
         return out;
     }
 
+    /* ───────────── self-service (/my-hr): one person's own records ───────────── */
+
+    /** One person's marks for a month, oldest first. Unmarked days are simply absent from the list. */
+    public List<StaffAttendance> myAttendance(int userId, int year, int month) throws SQLException {
+        String sql = "SELECT att_id, att_date, status, remarks, marked_by FROM staff_attendance "
+                   + " WHERE user_id = ? AND YEAR(att_date) = ? AND MONTH(att_date) = ? "
+                   + " ORDER BY att_date";
+        List<StaffAttendance> out = new ArrayList<>();
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, year);
+            ps.setInt(3, month);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    StaffAttendance a = new StaffAttendance();
+                    a.setAttId(rs.getInt("att_id"));
+                    a.setUserId(userId);
+                    a.setAttDate(rs.getString("att_date"));
+                    a.setStatus(rs.getString("status"));
+                    a.setRemarks(rs.getString("remarks"));
+                    a.setMarkedBy(rs.getString("marked_by"));
+                    out.add(a);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** One person's leave requests, newest first. */
+    public List<StaffLeave> myLeaves(int userId) throws SQLException {
+        String sql = "SELECT " + LEAVE_COLS
+                   + " FROM staff_leave l JOIN users u ON u.user_id = l.user_id "
+                   + "WHERE l.user_id = ? ORDER BY l.from_date DESC, l.leave_id DESC LIMIT 50";
+        List<StaffLeave> out = new ArrayList<>();
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) out.add(mapLeave(rs));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * One person's payslips, newest first. Drafts are left out: a draft is HR's
+     * working figure and can still change, so it is not the person's pay yet.
+     */
+    public List<Payslip> myPayslips(int userId) throws SQLException {
+        String sql = "SELECT " + SLIP_COLS
+                   + "  FROM salary_payslip p "
+                   + "  JOIN users u ON u.user_id = p.user_id "
+                   + "  LEFT JOIN fund_accounts f ON f.fund_id = p.fund_id "
+                   + " WHERE p.user_id = ? AND p.status = 'PAID' "
+                   + " ORDER BY p.period_year DESC, p.period_month DESC LIMIT 24";
+        List<Payslip> out = new ArrayList<>();
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) out.add(mapSlip(rs));
+            }
+        }
+        return out;
+    }
+
     public int applyLeave(StaffLeave l) throws SQLException {
         String sql = "INSERT INTO staff_leave "
                    + "(user_id, leave_type, from_date, to_date, days, reason, status, applied_by) "

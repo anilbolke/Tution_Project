@@ -343,13 +343,10 @@ public class LeadServlet extends HttpServlet {
         return null;
     }
 
-    /** A counsellor may only touch their own leads; everyone else sees all. */
+    /** A counsellor may only touch their own leads, an ABM their team's; everyone else all. */
     private boolean mayAccess(User user, Inquiry lead) {
-        if (!user.isCounsellor()) {
-            return true;
-        }
-        Integer owner = lead.getCounsellorId();
-        return owner == null || owner.intValue() == user.getUserId();
+        // own lead, or (for an ABM) a lead of someone reporting to them
+        return com.tution.dao.Scope.mayAccess(user, lead.getCounsellorId());
     }
 
     private void forwardForm(HttpServletRequest req, HttpServletResponse resp)

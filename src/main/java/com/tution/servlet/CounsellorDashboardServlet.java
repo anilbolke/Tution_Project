@@ -45,15 +45,22 @@ public class CounsellorDashboardServlet extends HttpServlet {
             return;
         }
 
-        // A counsellor only ever sees their own numbers; ADMIN may pick a
-        // counsellor, and defaults to their own.
+        // Whose numbers: your own by default. A counsellor sees only their own;
+        // an ABM may pick anyone in their team (their own view already totals
+        // the team); management may pick any counsellor.
         Integer target = Integer.valueOf(user.getUserId());
-        if (user.isAdmin()) {
-            String q = req.getParameter("counsellorId");
-            if (q != null && q.trim().matches("\\d+")) {
-                target = Integer.valueOf(q.trim());
-            }
+        java.util.Map<Integer, String> pickable;
+        try {
+            pickable = new com.tution.dao.MasterDAO().counsellors(com.tution.dao.Scope.of(user));
+        } catch (SQLException e) {
+            pickable = new java.util.LinkedHashMap<>();
         }
+        String q = req.getParameter("counsellorId");
+        if (q != null && q.trim().matches("\\d+") && pickable.containsKey(Integer.valueOf(q.trim()))) {
+            target = Integer.valueOf(q.trim());
+        }
+        boolean mayPick = pickable.size() > 1
+                || (pickable.size() == 1 && !pickable.containsKey(Integer.valueOf(user.getUserId())));
 
         LocalDate today = LocalDate.now();
         try {
@@ -78,9 +85,9 @@ public class CounsellorDashboardServlet extends HttpServlet {
             req.setAttribute("todayDemos",
                 demoDAO.find(today.toString(), today.plusDays(7).toString(), "SCHEDULED", target));
 
-            req.setAttribute("viewingOther",
-                Boolean.valueOf(user.isAdmin() && target.intValue() != user.getUserId()));
-            req.setAttribute("counsellors", new com.tution.dao.MasterDAO().counsellors());
+            req.setAttribute("viewingOther", Boolean.valueOf(target.intValue() != user.getUserId()));
+            req.setAttribute("counsellors", pickable);
+            req.setAttribute("mayPick", Boolean.valueOf(mayPick));
             req.setAttribute("targetId", target);
 
             // The counsellor's own quarterly target. Their own only - the

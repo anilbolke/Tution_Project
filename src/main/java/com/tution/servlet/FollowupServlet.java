@@ -55,9 +55,7 @@ public class FollowupServlet extends HttpServlet {
         InquiryDAO.Filter f = new InquiryDAO.Filter();
         f.openOnly   = true;
         f.orderByDue = true;
-        if (user.isCounsellor()) {
-            f.scopeCounsellorId = Integer.valueOf(user.getUserId());
-        }
+        f.scopeCounsellorId = com.tution.dao.Scope.of(user);   // own / ABM's team / all
 
         // Narrowing filters, on top of whichever due window the view picked.
         // A counsellor's own scope is applied above and is not one of these —
@@ -66,9 +64,9 @@ public class FollowupServlet extends HttpServlet {
         f.priority  = req.getParameter("priority");
         f.leadStage = req.getParameter("stage");
         f.status    = req.getParameter("status");
-        if (!user.isCounsellor()) {
-            f.counsellorId = intOrNull(req.getParameter("counsellor"));
-        }
+        // Picking one counsellor only ever narrows: it is ANDed with the scope
+        // above, so an ABM can filter to a team member but never outside the team.
+        f.counsellorId = intOrNull(req.getParameter("counsellor"));
 
         switch (view) {
             case "overdue":
@@ -98,7 +96,7 @@ public class FollowupServlet extends HttpServlet {
             req.setAttribute("counts", loadCounts(f, today));
             req.setAttribute("stages",        stageDAO.stages());
             req.setAttribute("subStagesJson", stageDAO.subStagesJson());
-            req.setAttribute("counsellors",   masterDAO.counsellors());
+            req.setAttribute("counsellors",   masterDAO.counsellors(f.scopeCounsellorId));
         } catch (SQLException e) {
             getServletContext().log("Follow-up queue failed", e);
             req.setAttribute("error", "Could not load the follow-up list. Please try again.");
@@ -221,11 +219,8 @@ public class FollowupServlet extends HttpServlet {
     }
 
     private boolean mayAccess(User user, Inquiry lead) {
-        if (!user.isCounsellor()) {
-            return true;
-        }
-        Integer owner = lead.getCounsellorId();
-        return owner == null || owner.intValue() == user.getUserId();
+        // own lead, or (for an ABM) a lead of someone reporting to them
+        return com.tution.dao.Scope.mayAccess(user, lead.getCounsellorId());
     }
 
     private static String safeView(String v) {

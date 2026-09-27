@@ -35,8 +35,7 @@ public class StudentListServlet extends HttpServlet {
             // A counsellor sees only their own students, the same rule the lead
             // pipeline already follows. Everyone else sees the whole institute.
             com.tution.model.User user = (com.tution.model.User) session.getAttribute("user");
-            Integer scope = (user != null && user.isCounsellor())
-                          ? Integer.valueOf(user.getUserId()) : null;
+            Integer scope = com.tution.dao.Scope.of(user);   // own / ABM's team / all
             List<Student> students = studentDAO.findAll(scope);
             req.setAttribute("students", students);
             req.setAttribute("scopedToOwn", Boolean.valueOf(scope != null));

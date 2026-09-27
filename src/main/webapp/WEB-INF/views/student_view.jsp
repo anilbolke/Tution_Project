@@ -202,7 +202,7 @@
 
         <%-- The link back to the lead this admission came from: it makes the
              conversion traceable in both directions. --%>
-        <% if (sourceLead != null && user.canSeeSales()) { %>
+        <% if (sourceLead != null && user.canSeeLeads()) { %>
         <div class="card">
           <h3>Source Enquiry</h3>
           <div class="kv" style="grid-template-columns:1fr;">

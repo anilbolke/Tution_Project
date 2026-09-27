@@ -266,9 +266,9 @@
           <option value="FOLLOWUP_REQUIRED"<%= sel(fstatus,"FOLLOWUP_REQUIRED") %>>Follow-up Required</option>
         </select>
       </div>
-      <%-- A counsellor's queue is already their own; only management can
-           choose whose queue to look at. --%>
-      <% if (!user.isCounsellor()) { %>
+      <%-- Shown when there is a choice: management sees every counsellor, an
+           ABM their team; a lone counsellor's list is just themself. --%>
+      <% if (counsellors != null && counsellors.size() > 1) { %>
       <div class="f">
         <label>Counsellor</label>
         <select name="counsellor">

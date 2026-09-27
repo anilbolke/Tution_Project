@@ -45,15 +45,20 @@ public class TargetServlet extends HttpServlet {
             throws ServletException, IOException {
         User user = (User) req.getSession().getAttribute("user");
         if (user == null) { resp.sendRedirect(req.getContextPath() + "/login.jsp"); return; }
-        if (user.isCounsellor()) {           // belt and braces; AuthFilter also blocks this
-            resp.sendRedirect(req.getContextPath() + "/my-dashboard");
-            return;
-        }
+        // Management sets targets for everyone. A counsellor sees their own, an
+        // ABM their team's - read-only; setting targets stays with management
+        // (doPost refuses the counsellor family outright).
+        Integer scope = com.tution.dao.Scope.of(user);
+        req.setAttribute("readOnly", Boolean.valueOf(scope != null));
         try {
             LocalDate start = periodStart(req.getParameter("q"));
             LocalDate end   = TargetDAO.quarterEnd(start);
 
             List<CounsellorTarget> rows = dao.forPeriod(PERIOD, start, end);
+            if (scope != null) {
+                java.util.Set<Integer> team = com.tution.dao.Scope.teamIds(scope);
+                rows.removeIf(t -> !team.contains(t.getCounsellorId()));
+            }
             req.setAttribute("rows", rows);
             req.setAttribute("periodStart", start.toString());
             req.setAttribute("periodEnd", end.toString());
@@ -62,8 +67,8 @@ public class TargetServlet extends HttpServlet {
             req.setAttribute("nextQ", start.plusMonths(3).toString());
 
             // "copy from last quarter" is offered only when there is something to copy
-            req.setAttribute("prevTargets",
-                    dao.previousTargets(PERIOD, start.minusMonths(3)));
+            req.setAttribute("prevTargets", scope != null ? new java.util.HashMap<Integer, int[]>()
+                    : dao.previousTargets(PERIOD, start.minusMonths(3)));
 
             long tAdmT = 0, tAdmA = 0, tRevT = 0, tRevA = 0;
             for (CounsellorTarget t : rows) {
@@ -89,8 +94,8 @@ public class TargetServlet extends HttpServlet {
                 List<CounsellorCourseTarget> ccRows =
                         ccDao.forCounsellor(selCounsellor, PERIOD, start, end);
                 req.setAttribute("ccRows", ccRows);
-                req.setAttribute("prevCcTargets",
-                        ccDao.previousTargets(selCounsellor, PERIOD, start.minusMonths(3)));
+                req.setAttribute("prevCcTargets", scope != null ? new java.util.HashMap<Integer, int[]>()
+                        : ccDao.previousTargets(selCounsellor, PERIOD, start.minusMonths(3)));
 
                 long ccAdmT = 0, ccAdmA = 0, ccRevT = 0, ccRevA = 0;
                 for (CounsellorCourseTarget t : ccRows) {

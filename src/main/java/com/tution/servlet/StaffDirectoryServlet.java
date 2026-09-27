@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.tution.dao.UserDAO;
+import com.tution.model.Role;
 import com.tution.model.User;
 
 /**
@@ -46,18 +47,19 @@ public class StaffDirectoryServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /** Every role a login can hold. Order is the order shown on screen. */
-    static final String[] ALL_ROLES =
-        { "ADMIN", "ACCOUNTANT", "HR", "STAFF", "COUNSELLOR", "TEACHER" };
+    static final String[] ALL_ROLES = Role.codes();
 
     /**
      * The roles HR may create, edit, reset or move somebody between.
      *
-     * Deliberately excludes ADMIN, ACCOUNTANT and HR: those three reach the
-     * institute's money or its permissions, and handing out that access is the
-     * administrator's decision, not an onboarding step.
+     * Deliberately excludes ADMIN, ACCOUNTANT, HR, OFFICE_ADMIN and the three
+     * heads/managers: those reach the institute's money, its people or its
+     * permissions, and handing out that access is the administrator's decision,
+     * not an onboarding step.
      */
     private static final Set<String> HR_ASSIGNABLE =
-        new HashSet<>(Arrays.asList("STAFF", "COUNSELLOR", "TEACHER"));
+        new HashSet<>(Arrays.asList("STAFF", "COUNSELLOR", "TEACHER",
+                                    "ABM", "ACADEMIC_INCHARGE", "ACADEMIC_COORDINATOR", "EDP"));
 
     private static final int MIN_PASSWORD = 6;
 
@@ -97,6 +99,7 @@ public class StaffDirectoryServlet extends HttpServlet {
                 case "create":   doCreate(req, user);              break;
                 case "update":   doUpdate(req, user);              break;
                 case "role":     doRole(req, user);                break;
+                case "manager":  doManager(req, user);             break;
                 case "password": doPassword(req, user);            break;
                 case "enable":   doActive(req, user, true);        break;
                 case "disable":  doActive(req, user, false);       break;
@@ -155,10 +158,28 @@ public class StaffDirectoryServlet extends HttpServlet {
         u.setRole(role);
         u.setActive(true);
 
+        // Optional reporting line, checked BEFORE the account exists so a bad
+        // pick does not leave a half-made login behind.
+        User manager = null;
+        int mgrId = parseInt(req.getParameter("reportsTo"), 0);
+        if (mgrId > 0) {
+            manager = userDAO.findById(mgrId);
+            if (manager == null || !manager.isActive()) {
+                flashError(req, "Pick an active person for \"Reports to\", or leave it blank.");
+                return;
+            }
+        }
+
         int id = userDAO.createUser(u, pw, by);
+        if (id > 0 && manager != null) {
+            User created = userDAO.findById(id);
+            if (created != null) userDAO.setReportsTo(created, manager, by);
+        }
         if (id > 0) {
             flash(req, "Login created for " + fullName + " (" + username + ") as "
-                     + role + ". Tell them the starting password and ask them to change it.");
+                     + Role.labelOf(role)
+                     + (manager == null ? "" : ", reporting to " + manager.getFullName())
+                     + ". Tell them the starting password and ask them to change it.");
         } else {
             flashError(req, "Could not create that login.");
         }
@@ -193,13 +214,13 @@ public class StaffDirectoryServlet extends HttpServlet {
             return;
         }
         if (role.equals(target.getRole())) {
-            flashError(req, target.getFullName() + " is already " + role + ".");
+            flashError(req, target.getFullName() + " is already " + Role.labelOf(role) + ".");
             return;
         }
         // The NEW role must also be one this person may hand out — otherwise HR
         // could move a teacher into ADMIN, which is the escalation this blocks.
         if (!assignableBy(by).contains(role)) {
-            flashError(req, "You cannot move anybody into " + role + ". Ask an administrator.");
+            flashError(req, "You cannot move anybody into " + Role.labelOf(role) + ". Ask an administrator.");
             return;
         }
         if (target.getUserId() == by.getUserId()) {
@@ -212,7 +233,46 @@ public class StaffDirectoryServlet extends HttpServlet {
             return;
         }
         if (userDAO.setRole(target, role, by)) {
-            flash(req, target.getFullName() + " is now " + role + ".");
+            flash(req, target.getFullName() + " is now " + Role.labelOf(role) + ".");
+        } else {
+            flashError(req, "That account no longer exists.");
+        }
+    }
+
+    /**
+     * Sets who somebody reports to. This is what scopes an ABM: every account
+     * reporting to them is "their team" (dao/Scope). One level, no loops.
+     */
+    private void doManager(HttpServletRequest req, User by) throws SQLException {
+        User target = target(req, by);
+        if (target == null) return;
+
+        int mgrId = parseInt(req.getParameter("reportsTo"), 0);
+        User manager = null;
+        if (mgrId > 0) {
+            manager = userDAO.findById(mgrId);
+            if (manager == null || !manager.isActive()) {
+                flashError(req, "That person is not an active login.");
+                return;
+            }
+            if (manager.getUserId() == target.getUserId()) {
+                flashError(req, "Nobody can report to themselves.");
+                return;
+            }
+            if (manager.getReportsTo() != null && manager.getReportsTo().intValue() == target.getUserId()) {
+                flashError(req, manager.getFullName() + " already reports to " + target.getFullName()
+                              + ". Change that first - two people cannot report to each other.");
+                return;
+            }
+        }
+        Integer now = target.getReportsTo();
+        if ((now == null && manager == null) || (now != null && manager != null && now.intValue() == mgrId)) {
+            flashError(req, "Nothing changed.");
+            return;
+        }
+        if (userDAO.setReportsTo(target, manager, by)) {
+            flash(req, target.getFullName() + (manager == null ? " now reports to nobody."
+                                                               : " now reports to " + manager.getFullName() + "."));
         } else {
             flashError(req, "That account no longer exists.");
         }
@@ -293,6 +353,7 @@ public class StaffDirectoryServlet extends HttpServlet {
     /** "an ADMIN" / "a TEACHER" — the messages read as English either way. */
     private static String a(String role) {
         if (role == null || role.isEmpty()) return "a role";
+        role = Role.labelOf(role);
         boolean vowel = "AEIOU".indexOf(Character.toUpperCase(role.charAt(0))) >= 0;
         return (vowel ? "an " : "a ") + role;
     }

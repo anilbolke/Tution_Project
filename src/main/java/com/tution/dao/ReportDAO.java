@@ -50,6 +50,40 @@ public class ReportDAO {
           "COALESCE(sf.net_payable, CASE WHEN fs.slab_key IS NULL THEN 0 ELSE "
         + FeeCalculator.ONE_TIME + " + fs.per_month * " + FeeCalculator.COURSE_MONTHS + " END)";
 
+    /**
+     * Row scope (Scope.of(user)): null = the whole institute; else the lead- and
+     * student-based reports only count that user and their direct reports.
+     * Final and per instance - the servlets share one ReportDAO across requests,
+     * so a scoped run gets its own instance rather than a field set on theirs.
+     */
+    private final Integer scope;
+
+    public ReportDAO() { this(null); }
+
+    private ReportDAO(Integer scope) { this.scope = scope; }
+
+    /** As {@link #run(String, String, String)}, limited to a counsellor's / ABM's own team. */
+    public ReportResult run(String type, String from, String to, Integer scope) throws SQLException {
+        if (scope == null) return run(type, from, to);
+        ReportResult r = new ReportDAO(scope).run(type, from, to);
+        if (SCOPED_TYPES.contains(r.getType())) {
+            String d = r.getDescription();
+            r.setDescription((d == null ? "" : d + " ") + "Showing your own leads and students"
+                    + " (and your team's, if anyone reports to you) - not the whole institute.");
+        }
+        return r;
+    }
+
+    /** Reports built on leads/students, which a scoped user sees only their share of. */
+    private static final java.util.Set<String> SCOPED_TYPES = new java.util.HashSet<>(java.util.Arrays.asList(
+            "lead-source", "counsellor", "funnel", "lost-lead", "course-wise",
+            "collection", "pending-fee", "discount", "target"));
+
+    /** " AND col IN (team) " when scoped, else "". The id is an int from the session, so inlining is safe. */
+    private String sc(String col) {
+        return scope == null ? "" : " AND " + Scope.teamOf(col, scope) + " ";
+    }
+
     public ReportResult run(String type, String from, String to) throws SQLException {
         if (type == null) {
             type = "lead-source";
@@ -89,6 +123,7 @@ public class ReportDAO {
             + "       COALESCE(SUM((SELECT COALESCE(SUM(p.amount),0) FROM payments p "
             + "                     WHERE p.student_id = i.converted_student_id)),0) AS revenue "
             + "FROM inquiries i WHERE 1=1 " + range("DATE(i.created_at)", from, to)
+            + sc("i.counsellor_id")
             + " GROUP BY src ORDER BY leads DESC";
 
         long tLeads = 0, tConv = 0, tRev = 0;
@@ -135,7 +170,8 @@ public class ReportDAO {
             + " (SELECT COALESCE(SUM(p.amount),0) FROM payments p "
             + "   JOIN students s2 ON s2.student_id = p.student_id "
             + "   WHERE s2.counsellor_id = u.user_id " + range("p.payment_date", from, to) + ") AS collected "
-            + "FROM users u WHERE u.is_active = 1 AND u.role IN ('COUNSELLOR','ADMIN') "
+            + "FROM users u WHERE u.is_active = 1 AND u.role IN ('COUNSELLOR','ABM','ADMIN') "
+            + sc("u.user_id")
             + "ORDER BY adms DESC, collected DESC";
 
         long tL = 0, tF = 0, tD = 0, tA = 0, tC = 0;
@@ -188,7 +224,7 @@ public class ReportDAO {
         Map<String, Long> counts = new LinkedHashMap<>();
         long total = 0;
         String sql = "SELECT status, COUNT(*) n FROM inquiries WHERE 1=1 "
-                   + range("DATE(created_at)", from, to) + " GROUP BY status";
+                   + range("DATE(created_at)", from, to) + sc("counsellor_id") + " GROUP BY status";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             bindRange(ps, 1, from, to);
@@ -228,6 +264,7 @@ public class ReportDAO {
             + "          ORDER BY f.followup_id DESC LIMIT 1),''), i.counsellor_remarks) AS why "
             + "FROM inquiries i LEFT JOIN users u ON u.user_id = i.counsellor_id "
             + "WHERE i.status IN ('LOST','NOT_INTERESTED') " + range("DATE(i.created_at)", from, to)
+            + sc("i.counsellor_id")
             + " ORDER BY i.inquiry_id DESC";
 
         try (Connection con = DBConnection.getConnection();
@@ -265,6 +302,7 @@ public class ReportDAO {
             + "LEFT JOIN student_fees sf ON sf.student_id = s.student_id "
             + "LEFT JOIN fee_slabs  fs ON fs.slab_key   = s.fee_slab "
             + "WHERE 1=1 " + range("DATE(s.created_at)", from, to)
+            + sc("s.counsellor_id")
             + " GROUP BY course ORDER BY n DESC";
 
         long tN = 0, tB = 0, tP = 0;
@@ -300,6 +338,7 @@ public class ReportDAO {
             + "       p.txn_ref, p.collected_by, p.amount "
             + "FROM payments p JOIN students s ON s.student_id = p.student_id "
             + "WHERE 1=1 " + range("p.payment_date", from, to)
+            + sc("s.counsellor_id")
             + " ORDER BY p.payment_date DESC, p.payment_id DESC";
 
         long total = 0;
@@ -359,7 +398,7 @@ public class ReportDAO {
             + "  LEFT JOIN student_fees sf ON sf.student_id = s.student_id "
             + "  LEFT JOIN fee_slabs  fs ON fs.slab_key   = s.fee_slab "
             + "  LEFT JOIN users u ON u.user_id = s.counsellor_id "
-            + "  WHERE s.is_active = 1"
+            + "  WHERE s.is_active = 1" + sc("s.counsellor_id")
             + ") t WHERE (payable - paid) > 0 "
             + "ORDER BY oldest_due IS NULL, oldest_due";
 
@@ -439,7 +478,9 @@ public class ReportDAO {
         r.setToDate(qe.toString());
 
         long tAdmT = 0, tAdmA = 0, tRevT = 0, tRevA = 0, tColl = 0;
+        java.util.Set<Integer> team = scope == null ? null : Scope.teamIds(scope);
         for (CounsellorTarget t : new TargetDAO().forPeriod("QUARTER", qs, qe)) {
+            if (team != null && !team.contains(t.getCounsellorId())) continue;
             // People with no target still appear: "not set" is a finding in its
             // own right on a management report, not a row to hide.
             String pace = String.format("%.0f", t.expectedPct()) + "% elapsed";
@@ -481,7 +522,7 @@ public class ReportDAO {
             + "       sf.discount, sf.scholarship, sf.net_payable, sf.approved_by, sf.remarks, "
             + "       sf.updated_at "
             + "FROM student_fees sf JOIN students s ON s.student_id = sf.student_id "
-            + "WHERE sf.discount > 0 OR sf.scholarship > 0 "
+            + "WHERE (sf.discount > 0 OR sf.scholarship > 0) " + sc("s.counsellor_id")
             + "ORDER BY (sf.discount + sf.scholarship) DESC";
 
         long tGross = 0, tDisc = 0, tSch = 0, tNet = 0;
@@ -822,34 +863,18 @@ public class ReportDAO {
 
     private static boolean notBlank(String s) { return s != null && !s.trim().isEmpty(); }
 
-    /**
-     * The finance reports, which are ADMIN only.
-     *
-     * These expose the fund balance, what the institute pays its vendors and the
-     * whole expense register - the same information the /fund, /vendors and
-     * /expenses screens are locked down for. Without this set, a report picker
-     * would quietly hand it all to anyone who can reach /reports.
-     */
-    private static final java.util.Set<String> ADMIN_ONLY_TYPES =
-            new java.util.HashSet<>(java.util.Arrays.asList(
-                    "exam-fee", "expense-register", "vendor-outstanding", "fund-statement"));
-
-    public static boolean isAdminOnly(String type) {
-        return type != null && ADMIN_ONLY_TYPES.contains(type);
-    }
-
-    /** Report ids paired with their titles, for the picker. */
+    /** Every report id paired with its title. */
     public static List<String[]> types() {
-        return types(true);
+        return new ArrayList<>(java.util.Arrays.asList(TYPES));
     }
 
-    /** @param admin false hides the finance reports from the picker entirely. */
-    public static List<String[]> types(boolean admin) {
+    /** The reports this user's role holds (RPT_* activities), in picker order. */
+    public static List<String[]> types(com.tution.model.User u) {
         List<String[]> out = new ArrayList<>();
         for (String[] t : TYPES) {
-            if (!admin && isAdminOnly(t[0])) continue;
-            out.add(t);
+            if (u != null && u.can(AccessDAO.reportActivity(t[0]))) out.add(t);
         }
         return out;
     }
+
 }

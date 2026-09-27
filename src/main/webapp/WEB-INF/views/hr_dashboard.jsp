@@ -108,6 +108,7 @@
 
   <%-- What needs doing, before anything that is merely interesting. --%>
   <div class="todo">
+    <% if (user.can("HR_ATTENDANCE")) { %>
     <a class="<%= unmarked > 0 ? "act" : "done" %>" href="<%= ctx %>/hr?tab=attendance">
       <div class="n"><%= unmarked %></div>
       <div class="l"><%= unmarked == 0 ? "Register is complete" : "Not marked today" %></div>
@@ -115,12 +116,16 @@
           ? presentToday + " in, " + absentToday + " absent, " + onLeaveToday + " on leave"
           : "of " + staffActive + " &mdash; mark the day &rarr;" %></div>
     </a>
+    <% } %>
+    <% if (user.can("HR_LEAVE")) { %>
     <a class="<%= leavePending > 0 ? "act" : "done" %>" href="<%= ctx %>/hr?tab=leave&status=PENDING">
       <div class="n"><%= leavePending %></div>
       <div class="l"><%= leavePending == 0 ? "No leave to decide" : "Leave awaiting a decision" %></div>
       <div class="s"><%= leavePending == 0 ? "nothing pending"
                                            : "approve or reject &rarr;" %></div>
     </a>
+    <% } %>
+    <% if (user.can("HR_SALARY")) { %>
     <a class="<%= (slipsTotal - slipsPaid) > 0 ? "act" : "done" %>" href="<%= ctx %>/hr?tab=salary">
       <div class="n"><%= slipsTotal - slipsPaid %></div>
       <div class="l"><%= slipsTotal == 0 ? "Payroll not started" : "Payslips still to pay" %></div>
@@ -128,9 +133,10 @@
           ? MONTHS[m] + " &mdash; generate drafts &rarr;"
           : "Rs. " + Money.fmt(payrollDue) + " outstanding" %></div>
     </a>
+    <% } %>
   </div>
 
-  <% if (noSalary > 0) { %>
+  <% if (noSalary > 0 && user.can("HR_SALARY")) { %>
     <div class="note-box">
       <b><%= noSalary %></b> active
       <%= noSalary == 1 ? "person has" : "people have" %> no salary on record, so
@@ -141,6 +147,7 @@
 
   <div class="grid2">
     <div>
+      <% if (user.can("HR_ATTENDANCE")) { %>
       <div class="card">
         <h2>Today &middot; <%= esc(today) %><a href="<%= ctx %>/hr?tab=attendance">Register &rarr;</a></h2>
         <p class="hint">Marks recorded so far.</p>
@@ -155,7 +162,9 @@
         <div class="bar"><i style="width:<%= pct %>%"></i></div>
         <div class="barlab"><span>Register complete</span><span><%= pct %>%</span></div>
       </div>
+      <% } %>
 
+      <% if (user.can("HR_SALARY")) { %>
       <div class="card">
         <h2>Payroll &middot; <%= MONTHS[m] %><a href="<%= ctx %>/hr?tab=salary">Open &rarr;</a></h2>
         <p class="hint">Paying a payslip debits a fund and shows on the accountant's statement.</p>
@@ -168,9 +177,11 @@
           <div class="v <%= payrollDue.signum()>0?"warn":"" %>">Rs. <%= Money.fmt(payrollDue) %></div>
         </div>
       </div>
+      <% } %>
     </div>
 
     <div>
+      <% if (user.can("SALES_LEAD")) { %>
       <div class="card">
         <h2>Enquiries &amp; admissions<a href="<%= ctx %>/inquiries">Leads &rarr;</a></h2>
         <p class="hint">This month, across the whole institute.</p>
@@ -182,7 +193,9 @@
           <div class="k">Conversion</div><div class="v"><%= st==null?0:st.conversionRate() %>%</div>
         </div>
       </div>
+      <% } %>
 
+      <% if (user.can("FEES")) { %>
       <div class="card">
         <h2>Fees<a href="<%= ctx %>/fees">Register &rarr;</a></h2>
         <p class="hint">What has come in this month, and what is still owed.</p>
@@ -195,6 +208,7 @@
             st==null?"0":Money.fmt(BigDecimal.valueOf(st.pendingFees)) %></div>
         </div>
       </div>
+      <% } %>
 
       <div class="card">
         <h2>People<a href="<%= ctx %>/staff">Directory &rarr;</a></h2>

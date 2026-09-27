@@ -54,11 +54,11 @@ public class UserDAO {
      * travel to a JSP, and a directory that never loads one cannot leak one.
      */
     public java.util.List<User> allStaff() throws SQLException {
-        String sql = "SELECT user_id, username, full_name, email, mobile, role, is_active, "
-                   + "       created_at, last_login "
-                   + "  FROM users "
-                   + " ORDER BY is_active DESC, FIELD(role,'ADMIN','ACCOUNTANT','HR','STAFF',"
-                   + "         'COUNSELLOR','TEACHER'), full_name";
+        String sql = "SELECT u.user_id, u.username, u.full_name, u.email, u.mobile, u.role, u.is_active, "
+                   + "       u.created_at, u.last_login, u.reports_to, m.full_name AS reports_to_name "
+                   + "  FROM users u LEFT JOIN users m ON m.user_id = u.reports_to "
+                   + " ORDER BY u.is_active DESC, FIELD(u.role,'"
+                   + String.join("','", com.tution.model.Role.codes()) + "'), u.full_name";
         java.util.List<User> out = new java.util.ArrayList<>();
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -76,6 +76,9 @@ public class UserDAO {
                 u.setCreatedAt(created == null ? null : created.toString().substring(0, 10));
                 Timestamp seen = rs.getTimestamp("last_login");
                 u.setLastLogin(seen == null ? null : seen.toString().substring(0, 16));
+                int mgr = rs.getInt("reports_to");
+                u.setReportsTo(rs.wasNull() ? null : Integer.valueOf(mgr));
+                u.setReportsToName(rs.getString("reports_to_name"));
                 out.add(u);
             }
         }
@@ -86,7 +89,7 @@ public class UserDAO {
 
     /** One account by id, or null. Never selects the password. */
     public User findById(int userId) throws SQLException {
-        String sql = "SELECT user_id, username, full_name, email, mobile, role, is_active "
+        String sql = "SELECT user_id, username, full_name, email, mobile, role, is_active, reports_to "
                    + "  FROM users WHERE user_id = ?";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -101,6 +104,8 @@ public class UserDAO {
                 u.setMobile(rs.getString("mobile"));
                 u.setRole(rs.getString("role"));
                 u.setActive(rs.getInt("is_active") == 1);
+                int mgr = rs.getInt("reports_to");
+                u.setReportsTo(rs.wasNull() ? null : Integer.valueOf(mgr));
                 return u;
             }
         }
@@ -199,6 +204,39 @@ public class UserDAO {
             if (!done) { con.rollback(); return false; }
             insertAudit(con, u.getUserId(), u.getUsername(), u.getFullName(),
                         UserAudit.UPDATE, "Name, email or mobile updated", by);
+            con.commit();
+            return true;
+        } catch (SQLException e) {
+            if (con != null) {
+                try { con.rollback(); } catch (SQLException ignore) { }
+            }
+            throw e;
+        } finally {
+            closeQuietly(con);
+        }
+    }
+
+    /**
+     * Sets who this account reports to (null = nobody). Audited. The caller
+     * checks the manager is a real, active account and not a loop.
+     */
+    public boolean setReportsTo(User target, User manager, User by) throws SQLException {
+        Connection con = null;
+        try {
+            con = DBConnection.getConnection();
+            con.setAutoCommit(false);
+            boolean done;
+            try (PreparedStatement ps = con.prepareStatement(
+                     "UPDATE users SET reports_to = ? WHERE user_id = ?")) {
+                if (manager == null) ps.setNull(1, java.sql.Types.INTEGER);
+                else                 ps.setInt(1, manager.getUserId());
+                ps.setInt(2, target.getUserId());
+                done = ps.executeUpdate() > 0;
+            }
+            if (!done) { con.rollback(); return false; }
+            insertAudit(con, target.getUserId(), target.getUsername(), target.getFullName(),
+                        UserAudit.MANAGER,
+                        manager == null ? "Reports to nobody" : "Reports to " + manager.getFullName(), by);
             con.commit();
             return true;
         } catch (SQLException e) {

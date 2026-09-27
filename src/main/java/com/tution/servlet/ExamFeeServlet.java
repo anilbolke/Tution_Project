@@ -326,8 +326,7 @@ public class ExamFeeServlet extends HttpServlet {
 
     /**
      * Returns the logged-in office user, or null having already redirected.
-     * Taking a fee is front-desk work, so STAFF is allowed alongside ADMIN;
-     * counsellors and teachers are not.
+     * Who may take a fee is the FIN_EXAM_FEES activity in the role matrix.
      */
     private User requireOffice(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
@@ -336,7 +335,7 @@ public class ExamFeeServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/login.jsp");
             return null;
         }
-        if (user.isCounsellor() || user.isTeacher()) {
+        if (!user.can("FIN_EXAM_FEES")) {
             resp.sendRedirect(req.getContextPath() + user.homePath());
             return null;
         }

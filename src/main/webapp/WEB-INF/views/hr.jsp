@@ -193,13 +193,20 @@
   </div>
 
   <div class="tabs">
+    <%-- each tab is its own activity in the role matrix (HR_ATTENDANCE / HR_LEAVE / HR_SALARY) --%>
+    <% if (user.can("HR_ATTENDANCE")) { %>
     <a href="<%= ctx %>/hr?tab=attendance&date=<%= esc(date) %><%= period %>"
        class="<%= "attendance".equals(tab) ? "on" : "" %>">Attendance</a>
+    <% } %>
+    <% if (user.can("HR_LEAVE")) { %>
     <a href="<%= ctx %>/hr?tab=leave<%= period %>"
        class="<%= "leave".equals(tab) ? "on" : "" %>">Leave<%
        if (pending > 0 && "leave".equals(tab)) { %><span class="pill"><%= pending %></span><% } %></a>
+    <% } %>
+    <% if (user.can("HR_SALARY")) { %>
     <a href="<%= ctx %>/hr?tab=salary<%= period %>"
        class="<%= "salary".equals(tab) ? "on" : "" %>">Salary</a>
+    <% } %>
   </div>
 
   <% if (flash != null) { %><div class="msg ok"><%= esc(flash) %></div><% } %>
@@ -253,7 +260,7 @@
                   <% if (a.getMarkedBy() != null) { %>
                     <div class="sub2">by <%= esc(a.getMarkedBy()) %></div>
                   <% } %></td>
-                <td><span class="rl"><%= esc(a.getRole()) %></span></td>
+                <td><span class="rl"><%= esc(com.tution.model.Role.labelOf(a.getRole())) %></span></td>
                 <td>
                   <div class="marks">
                     <label><input type="radio" name="status_<%= a.getUserId() %>" value=""
@@ -396,7 +403,7 @@
         <% if (leaves != null) for (StaffLeave l : leaves) { %>
           <tr>
             <td class="nm"><%= esc(l.getStaffName()) %>
-              <div class="sub2"><%= esc(l.getRole()) %></div></td>
+              <div class="sub2"><%= esc(com.tution.model.Role.labelOf(l.getRole())) %></div></td>
             <td><%= esc(l.getTypeLabel()) %><% if (l.isUnpaid()) { %>
               <div class="sub2">reduces pay</div><% } %></td>
             <td><%= esc(l.getFromDate()) %>
@@ -497,7 +504,7 @@
           <% if (payslips != null) for (Payslip p : payslips) { %>
             <tr>
               <td class="nm"><%= esc(p.getStaffName()) %>
-                <div class="sub2"><%= esc(p.getRole()) %></div></td>
+                <div class="sub2"><%= esc(com.tution.model.Role.labelOf(p.getRole())) %></div></td>
               <td class="num"><%= Money.fmt(p.getMonthlyCtc()) %></td>
               <td class="num"><%= trimNum(p.getPayableDays()) %> / <%= p.getMonthDays() %></td>
               <td class="num"><%= trimNum(p.getAbsentDays() + p.getUnpaidDays()) %>

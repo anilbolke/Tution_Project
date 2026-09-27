@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.*, com.tution.model.User, com.tution.model.UserAudit" %>
+<%@ page import="java.util.*, com.tution.model.User, com.tution.model.UserAudit, com.tution.model.Role" %>
 <%
     User user = (User) session.getAttribute("user");
     if (user == null) { response.sendRedirect(request.getContextPath() + "/login.jsp"); return; }
@@ -16,6 +16,9 @@
     String[] allRoles = (String[]) request.getAttribute("allRoles");
     if (allRoles == null) allRoles = new String[0];
     Integer adminCount = (Integer) request.getAttribute("adminCount");
+    // who can be reported to: any active login (an ABM, a branch manager, ...)
+    List<User> managers = new ArrayList<User>();
+    for (User m : staff) if (m.isActive()) managers.add(m);
 
     String error      = (String) request.getAttribute("error");
     String flash      = (String) session.getAttribute("flash");
@@ -117,12 +120,13 @@
 
   .rl { font-size:10px; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
         padding:3px 9px; border-radius:20px; white-space:nowrap; display:inline-block; }
-  .rl-Admin      { background:#d9ece1; color:#0b4a33; }
-  .rl-Accountant { background:#dbeee6; color:#12634a; }
+  /* keyed by role FAMILY, so the new roles share their family's colour */
+  .rl-ADMIN      { background:#d9ece1; color:#0b4a33; }
+  .rl-ACCOUNTANT { background:#dbeee6; color:#12634a; }
   .rl-HR         { background:#f3e4ee; color:#8a3a68; }
-  .rl-Staff      { background:#dde9fb; color:#1B4F9C; }
-  .rl-Counsellor { background:#fbeecd; color:#8A5E00; }
-  .rl-Teacher    { background:#d7eef3; color:#0F6C7E; }
+  .rl-STAFF      { background:#dde9fb; color:#1B4F9C; }
+  .rl-COUNSELLOR { background:#fbeecd; color:#8A5E00; }
+  .rl-TEACHER    { background:#d7eef3; color:#0F6C7E; }
 
   .st { font-size:10px; font-weight:800; padding:2px 9px; border-radius:20px; letter-spacing:.4px;
         text-transform:uppercase; display:inline-block; }
@@ -204,7 +208,7 @@
           <div class="fl"><label for="cRole">Role</label>
             <select name="role" id="cRole" required>
               <% for (String r : allRoles) { if (!assignable.contains(r)) continue; %>
-                <option value="<%= r %>"<%= "TEACHER".equals(r) ? " selected" : "" %>><%= r %></option>
+                <option value="<%= r %>"<%= "TEACHER".equals(r) ? " selected" : "" %>><%= esc(Role.labelOf(r)) %></option>
               <% } %>
             </select></div>
           <div class="fl"><label for="cPw">Starting password</label>
@@ -216,6 +220,13 @@
           <div class="fl sp2"><label for="cMail">Email <span class="opt">(optional)</span></label>
             <input type="email" name="email" id="cMail" maxlength="120"
                    placeholder="anita@example.com"></div>
+          <div class="fl sp2"><label for="cMgr">Reports to <span class="opt">(optional &mdash; a counsellor's ABM)</span></label>
+            <select name="reportsTo" id="cMgr">
+              <option value="">Nobody</option>
+              <% for (User m : managers) { %>
+                <option value="<%= m.getUserId() %>"><%= esc(m.getFullName()) %> &middot; <%= esc(m.getRoleLabel()) %></option>
+              <% } %>
+            </select></div>
         </div>
         <div class="fact">
           <span class="note">Recorded on the change history below, with your name against it.</span>
@@ -257,9 +268,10 @@
         %>
           <tr<%= u.isActive() ? "" : " class=\"off\"" %>>
             <td class="nm"><%= esc(u.getFullName()) %>
-              <% if (isSelf) { %><div class="sub2">this is you</div><% } %></td>
+              <% if (isSelf) { %><div class="sub2">this is you</div><% } %>
+              <% if (u.getReportsToName() != null) { %><div class="sub2">reports to <%= esc(u.getReportsToName()) %></div><% } %></td>
             <td class="mono"><%= esc(u.getUsername()) %></td>
-            <td><span class="rl rl-<%= esc(u.getRoleLabel()) %>"><%= esc(u.getRoleLabel()) %></span></td>
+            <td><span class="rl rl-<%= esc(Role.familyOf(u.getRole())) %>"><%= esc(u.getRoleLabel()) %></span></td>
             <td>
               <%= (u.getMobile()==null||u.getMobile().isEmpty())
                   ? "<span class=\"muted\">&mdash;</span>" : esc(u.getMobile()) %>
@@ -302,7 +314,7 @@
                         <input type="hidden" name="userId" value="<%= u.getUserId() %>">
                         <select name="role">
                           <% for (String r : allRoles) { if (!assignable.contains(r)) continue; %>
-                            <option value="<%= r %>"<%= r.equals(u.getRole())?" selected":"" %>><%= r %></option>
+                            <option value="<%= r %>"<%= r.equals(u.getRole())?" selected":"" %>><%= esc(Role.labelOf(r)) %></option>
                           <% } %>
                         </select>
                         <button class="btn sm" type="submit">Move</button>
@@ -310,6 +322,23 @@
                     </div>
                   </details>
                   <% } %>
+
+                  <details class="row">
+                    <summary>Reports to</summary>
+                    <div>
+                      <form method="post" action="<%= ctx %>/staff" style="display:flex;gap:7px">
+                        <input type="hidden" name="action" value="manager">
+                        <input type="hidden" name="userId" value="<%= u.getUserId() %>">
+                        <select name="reportsTo" style="flex:1 1 170px">
+                          <option value="">Nobody</option>
+                          <% for (User m : managers) { if (m.getUserId() == u.getUserId()) continue; %>
+                            <option value="<%= m.getUserId() %>"<%= u.getReportsTo() != null && u.getReportsTo().intValue() == m.getUserId() ? " selected" : "" %>><%= esc(m.getFullName()) %> &middot; <%= esc(m.getRoleLabel()) %></option>
+                          <% } %>
+                        </select>
+                        <button class="btn sm" type="submit">Set</button>
+                      </form>
+                    </div>
+                  </details>
 
                   <details class="row">
                     <summary>Password</summary>

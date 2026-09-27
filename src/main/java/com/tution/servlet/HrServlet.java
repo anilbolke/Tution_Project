@@ -100,6 +100,18 @@ public class HrServlet extends HttpServlet {
 
         String action = orDefault(req.getParameter("action"), "");
         String tab    = orDefault(req.getParameter("tab"), "attendance");
+
+        // AuthFilter checked the ?tab= the form claims; what matters is what the
+        // action does. Otherwise a role with the attendance tab but not salary
+        // could post action=setsalary&tab=attendance.
+        String needs = "markday".equals(action) ? "HR_ATTENDANCE"
+                     : "applyleave".equals(action) || "decideleave".equals(action) ? "HR_LEAVE"
+                     : "setsalary".equals(action) || "generate".equals(action)
+                       || "pay".equals(action) ? "HR_SALARY" : null;
+        if (needs != null && !user.can(needs)) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Your role cannot do that.");
+            return;
+        }
         LocalDate today = LocalDate.now();
         int year  = intParam(req, "y", today.getYear());
         int month = intParam(req, "m", today.getMonthValue());
@@ -233,7 +245,8 @@ public class HrServlet extends HttpServlet {
      * The override exists for the half-day case: two dates cannot express
      * "0.5", and payroll must use the number a human approved.
      */
-    private static double daysBetween(String from, String to, String override) {
+    /** Also used by MyHrServlet, so a leave counts the same days on both screens. */
+    static double daysBetween(String from, String to, String override) {
         if (override != null && !override.trim().isEmpty()) {
             try {
                 double d = Double.parseDouble(override.trim());
