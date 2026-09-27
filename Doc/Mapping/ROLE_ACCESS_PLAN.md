@@ -210,12 +210,24 @@ Implemented via `reports_to` + a `UserDAO.teamIds(user)` helper used where `!use
 >
 > **Notes:** scope is one level (an ABM's direct reports). Only an ADMIN can move a lead between counsellors — an ABM reassigning within the team would be a small follow-up if wanted.
 
-### Phase 4 — Test & roll-out
-1. Automated check: log in as each of 14 roles, hit all ~60 URLs, compare to matrix → pass/fail table.
-2. Migrate existing users (STAFF → per D1).
-3. Deploy (schema script + WTP publish + context reload), update memory/docs.
+### Phase 4 — Roll-out  ✅ *dev done 2026-09-27 — production pending*
 
----
+> **Done on the dev server**
+> - Existing `STAFF` user **Sunita Rane → Office Admin** (via /staff, so it is in the change history). No login holds `STAFF` any more; the role stays in the enum/matrix for safety.
+> - All 13 `t_*` test logins removed. Re-create them any time with `database/tools/test-logins.sql`, run `access_matrix_test.py`, then `test-logins-remove.sql`.
+> - Committed on branch `feature/role-activity-mapping` (commit `5f59f36`). Unrelated work already in progress (admission state/district, server-logs page) was left out and is still uncommitted.
+>
+> **Production runbook** (in this order)
+> 1. **Back up** the database.
+> 2. Run the three migrations:
+>    `2026-09-roles-workflow.sql` → `2026-09-role-activity-matrix.sql` → `2026-09-reporting-line.sql`.
+>    (The matrix migration **resets** the grid to the sheet — only run it once, before anyone edits /role-mapping.)
+> 3. Deploy the build and **restart** the context (two new servlets: `/role-mapping`, `/my-hr`).
+> 4. As ADMIN: change the role of every production `STAFF` login to the right new role (e.g. Office Admin), and set **Reports to** for counsellors under an ABM.
+> 5. Smoke test: sign in as one user per role → lands on their dashboard, menu matches the sheet column. Open /role-mapping as ADMIN.
+> 6. Tell staff about the access changes (see Phase 2 "Behaviour changes").
+>
+> **Rollback:** redeploy the previous build. The migrations only add (enum values, a column, new tables, paths) — the old code runs against the new schema unchanged, except that users on a new role would have no access under the old code.
 
 ## 5. Decisions needed before / during build
 
