@@ -125,31 +125,31 @@
   <% if (error != null) { %><div class="msg err"><%= esc(error) %></div><% } %>
 
   <div class="todo">
-    <a class="<%= classesToDo > 0 ? "act" : "done" %>" href="<%= ctx %>/attendance">
+    <% if (user.mayOpen("/attendance")) { %><a class="<%= classesToDo > 0 ? "act" : "done" %>" href="<%= ctx %>/attendance">
       <div class="n"><%= classesToDo %></div>
       <div class="l"><%= classesToDo == 0 ? "Attendance is done" : "Classes not fully marked" %></div>
       <div class="s"><%= classesToDo == 0
           ? marked + " marked, " + absent + " absent today"
           : "mark today&rsquo;s register &rarr;" %></div>
-    </a>
-    <a class="<%= examsToDo > 0 ? "act" : "done" %>" href="<%= ctx %>/exams">
+    </a><% } %>
+    <% if (user.mayOpen("/exams")) { %><a class="<%= examsToDo > 0 ? "act" : "done" %>" href="<%= ctx %>/exams">
       <div class="n"><%= examsToDo %></div>
       <div class="l"><%= examsToDo == 0 ? "All marks entered" : "Exams awaiting marks" %></div>
       <div class="s"><%= examsToDo == 0
           ? i(d.get("exams")) + " exam(s) on record"
           : "enter marks &rarr;" %></div>
-    </a>
-    <a class="<%= i(d.get("openTickets")) > 0 ? "act" : "done" %>" href="<%= ctx %>/manage-tickets">
+    </a><% } %>
+    <% if (user.mayOpen("/manage-tickets")) { %><a class="<%= i(d.get("openTickets")) > 0 ? "act" : "done" %>" href="<%= ctx %>/manage-tickets">
       <div class="n"><%= i(d.get("openTickets")) %></div>
       <div class="l"><%= i(d.get("openTickets")) == 0 ? "No open concerns" : "Student concerns open" %></div>
       <div class="s"><%= i(d.get("openTickets")) == 0 ? "nothing waiting" : "reply &rarr;" %></div>
-    </a>
+    </a><% } %>
   </div>
 
   <div class="grid2">
     <div>
       <div class="card">
-        <h2>Today by class<a href="<%= ctx %>/attendance">Mark &rarr;</a></h2>
+        <h2>Today by class<% if (user.mayOpen("/attendance")) { %><a href="<%= ctx %>/attendance">Mark &rarr;</a><% } %></h2>
         <p class="hint">How much of each class register is filled in for <%= esc(today) %>.</p>
         <% for (Map<String,Object> c : classes) {
              int st = i(c.get("students")), mk = i(c.get("marked"));
@@ -166,7 +166,7 @@
       </div>
 
       <div class="card">
-        <h2><%= MONTHS[m] %> attendance<a href="<%= ctx %>/attendance-report">Report &rarr;</a></h2>
+        <h2><%= MONTHS[m] %> attendance<% if (user.mayOpen("/attendance-report")) { %><a href="<%= ctx %>/attendance-report">Report &rarr;</a><% } %></h2>
         <div class="kv">
           <div class="k">Marks recorded</div><div class="v"><%= mMarks %></div>
           <div class="k">Present or late</div><div class="v"><%= mPresent %></div>
@@ -179,7 +179,7 @@
 
     <div>
       <div class="card">
-        <h2>Exams &amp; marks<a href="<%= ctx %>/exams">All exams &rarr;</a></h2>
+        <h2>Exams &amp; marks<% if (user.mayOpen("/exams")) { %><a href="<%= ctx %>/exams">All exams &rarr;</a><% } %></h2>
         <p class="hint">How much of each exam&rsquo;s mark sheet is filled in.</p>
         <% for (Map<String,Object> e : exams) {
              int pct = i(e.get("pct")); %>
@@ -192,31 +192,31 @@
         <% } %>
         <% if (exams.isEmpty()) { %>
           <p class="muted" style="font-size:13px;margin:0">No exams yet.
-             <a href="<%= ctx %>/exam-new">Create one &rarr;</a></p>
+             <% if (user.mayOpen("/exam-new")) { %><a href="<%= ctx %>/exam-new">Create one &rarr;</a><% } %></p>
         <% } %>
       </div>
 
       <div class="card">
         <h2>Go to</h2>
         <div class="goto">
-          <a href="<%= ctx %>/attendance"><span class="ic">📅</span>
+          <% if (user.mayOpen("/attendance")) { %><a href="<%= ctx %>/attendance"><span class="ic">📅</span>
             <span class="tx"><span class="t1">Attendance</span>
-              <span class="t2">Mark today</span></span></a>
-          <a href="<%= ctx %>/exam-marks"><span class="ic">✏️</span>
+              <span class="t2">Mark today</span></span></a><% } %>
+          <% if (user.mayOpen("/exam-marks")) { %><a href="<%= ctx %>/exam-marks"><span class="ic">✏️</span>
             <span class="tx"><span class="t1">Enter marks</span>
-              <span class="t2">Per exam</span></span></a>
-          <a href="<%= ctx %>/exam-results"><span class="ic">🏅</span>
+              <span class="t2">Per exam</span></span></a><% } %>
+          <% if (user.mayOpen("/exam-results")) { %><a href="<%= ctx %>/exam-results"><span class="ic">🏅</span>
             <span class="tx"><span class="t1">Results</span>
-              <span class="t2">Ranks &amp; cards</span></span></a>
-          <a href="<%= ctx %>/students"><span class="ic">👥</span>
+              <span class="t2">Ranks &amp; cards</span></span></a><% } %>
+          <% if (user.mayOpen("/students")) { %><a href="<%= ctx %>/students"><span class="ic">👥</span>
             <span class="tx"><span class="t1">Students</span>
-              <span class="t2"><%= students %> active</span></span></a>
-          <a href="<%= ctx %>/materials"><span class="ic">📚</span>
+              <span class="t2"><%= students %> active</span></span></a><% } %>
+          <% if (user.mayOpen("/materials")) { %><a href="<%= ctx %>/materials"><span class="ic">📚</span>
             <span class="tx"><span class="t1">Materials</span>
-              <span class="t2"><%= i(d.get("materials")) %> uploaded</span></span></a>
-          <a href="<%= ctx %>/omr"><span class="ic">📄</span>
+              <span class="t2"><%= i(d.get("materials")) %> uploaded</span></span></a><% } %>
+          <% if (user.mayOpen("/omr")) { %><a href="<%= ctx %>/omr"><span class="ic">📄</span>
             <span class="tx"><span class="t1">OMR scan</span>
-              <span class="t2">Answer sheets</span></span></a>
+              <span class="t2">Answer sheets</span></span></a><% } %>
         </div>
       </div>
     </div>

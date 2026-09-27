@@ -66,7 +66,7 @@ public class InstallmentDAO {
         if (notBlank(to))   { sql.append("AND i.due_date <= ? "); args.add(to); }
         if (unsentOnly)     { sql.append("AND i.reminder_sent = 0 "); }
         if (scopeCounsellorId != null) {
-            sql.append("AND s.counsellor_id = ? ");
+            sql.append("AND ").append(Scope.teamOf("s.counsellor_id")).append(' ');
             args.add(scopeCounsellorId);
         }
         sql.append("ORDER BY i.due_date, s.full_name");

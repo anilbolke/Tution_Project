@@ -45,7 +45,7 @@ public class GlobalSearchServlet extends HttpServlet {
         if (q != null && !q.trim().isEmpty()) {
             // A counsellor searches only their own leads; ADMIN and back-office
             // staff search everything.
-            Integer scope = user.isCounsellor() ? Integer.valueOf(user.getUserId()) : null;
+            Integer scope = com.tution.dao.Scope.of(user);
             try {
                 List<SearchHit> hits = searchDAO.search(q, scope);
                 req.setAttribute("hits", hits);

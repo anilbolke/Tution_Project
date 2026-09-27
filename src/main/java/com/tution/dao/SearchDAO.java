@@ -52,7 +52,7 @@ public class SearchDAO {
             ? "(i.mobile = ? OR i.parent_mobile = ?) "
             : "(i.full_name LIKE ? OR i.email LIKE ?) ");
         if (scopeCounsellorId != null) {
-            leadSql.append("AND i.counsellor_id = ? ");
+            leadSql.append("AND ").append(Scope.teamOf("i.counsellor_id")).append(' ');
         }
         leadSql.append("ORDER BY i.inquiry_id DESC LIMIT ").append(MAX_HITS);
 

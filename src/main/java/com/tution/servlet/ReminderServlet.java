@@ -50,8 +50,8 @@ public class ReminderServlet extends HttpServlet {
         }
 
         String kind = req.getParameter("kind");
-        // A counsellor chases their own leads and students, not the institute's.
-        Integer scope = user.isCounsellor() ? Integer.valueOf(user.getUserId()) : null;
+        // A counsellor chases their own leads and students (an ABM, their team's), not the institute's.
+        Integer scope = com.tution.dao.Scope.of(user);
         try {
             List<Reminder> all = service.queue(scope);
             List<Reminder> shown = new ArrayList<>();
@@ -100,7 +100,7 @@ public class ReminderServlet extends HttpServlet {
         String action = req.getParameter("action");
         String kind   = req.getParameter("kind");
         String ctx    = req.getContextPath();
-        Integer scope = user.isCounsellor() ? Integer.valueOf(user.getUserId()) : null;
+        Integer scope = com.tution.dao.Scope.of(user);
         String back   = ctx + "/reminders" + (kind == null || kind.isEmpty() ? "" : "?kind=" + kind);
 
         try {

@@ -234,7 +234,7 @@
         <label>To</label>
         <input type="date" name="to" value="<%= v(fto) %>">
       </div>
-      <% if (!user.isCounsellor()) { %>
+      <% if (counsellors != null && counsellors.size() > 1) { %>
       <div class="f">
         <label>Counsellor</label>
         <select name="counsellor">

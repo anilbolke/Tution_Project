@@ -222,7 +222,7 @@ public class StudentDAO {
     public List<Student> findAll(Integer scopeCounsellorId) throws SQLException {
         String sql = "SELECT " + FULL_COLS + " FROM students s "
                    + "LEFT JOIN users u ON u.user_id = s.counsellor_id "
-                   + (scopeCounsellorId == null ? "" : "WHERE s.counsellor_id = ? ")
+                   + (scopeCounsellorId == null ? "" : "WHERE " + Scope.teamOf("s.counsellor_id") + " ")
                    + "ORDER BY s.student_id DESC";
         List<Student> list = new ArrayList<>();
         try (Connection con = DBConnection.getConnection();

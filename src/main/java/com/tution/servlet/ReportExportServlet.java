@@ -50,20 +50,22 @@ public class ReportExportServlet extends HttpServlet {
 
         String type = req.getParameter("type");
         if (type == null || type.isEmpty()) {
-            type = "lead-source";
+            // The first report this role holds - not a fixed one it may not have.
+            java.util.List<String[]> mine = ReportDAO.types(user);
+            type = mine.isEmpty() ? "lead-source" : mine.get(0)[0];
         }
         // Same lock as the on-screen report. An export route that skipped it
         // would be the easier way in, not the harder one.
-        if (ReportDAO.isAdminOnly(type) && !user.isAdmin()) {
+        if (!user.can(com.tution.dao.AccessDAO.reportActivity(type))) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN,
-                           "That report is for the administrator.");
+                           "Your role does not have this report.");
             return;
         }
         String from = req.getParameter("from");
         String to   = req.getParameter("to");
 
         try {
-            ReportResult r = reportDAO.run(type, from, to);
+            ReportResult r = reportDAO.run(type, from, to, com.tution.dao.Scope.of(user));
 
             List<String[]> rows = new ArrayList<>();
             // A title block, so a downloaded sheet still says what it is and

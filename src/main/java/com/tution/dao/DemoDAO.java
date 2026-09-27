@@ -56,7 +56,7 @@ public class DemoDAO {
         if (notBlank(to))     { sql.append("AND d.demo_date <= ? "); args.add(to); }
         if (notBlank(status)) { sql.append("AND d.status = ? ");     args.add(status); }
         if (scopeCounsellorId != null) {
-            sql.append("AND i.counsellor_id = ? ");
+            sql.append("AND ").append(Scope.teamOf("i.counsellor_id")).append(' ');
             args.add(scopeCounsellorId);
         }
         sql.append("ORDER BY d.demo_date, d.demo_time, d.demo_id");

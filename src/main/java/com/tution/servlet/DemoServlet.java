@@ -54,7 +54,7 @@ public class DemoServlet extends HttpServlet {
             from = today.toString();
             to   = today.plusDays(14).toString();
         }
-        Integer scope = user.isCounsellor() ? Integer.valueOf(user.getUserId()) : null;
+        Integer scope = com.tution.dao.Scope.of(user);
 
         try {
             req.setAttribute("demos", demoDAO.find(from, to, status, scope));
@@ -152,11 +152,8 @@ public class DemoServlet extends HttpServlet {
     }
 
     private boolean mayAccess(User user, Inquiry lead) {
-        if (!user.isCounsellor()) {
-            return true;
-        }
-        Integer owner = lead.getCounsellorId();
-        return owner == null || owner.intValue() == user.getUserId();
+        // own lead, or (for an ABM) a lead of someone reporting to them
+        return com.tution.dao.Scope.mayAccess(user, lead.getCounsellorId());
     }
 
     private static User currentUser(HttpServletRequest req) {

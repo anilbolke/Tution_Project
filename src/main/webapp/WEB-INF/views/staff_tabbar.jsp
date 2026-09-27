@@ -1,50 +1,75 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="com.tution.model.User" %>
+<%@ page import="com.tution.model.User, com.tution.model.Role" %>
 <%--
-  Mobile bottom tab bar. Role-aware for the same reason the header is: a
-  counsellor's five tabs are sales work, a teacher's are academic, and neither
-  should be shown the other's.
+  Mobile bottom tab bar: Home plus the first four screens this role may open,
+  from a priority list that suits its kind of work (a counsellor's are sales, a
+  teacher's academic). What "may open" means is the role/activity matrix — the
+  same user.can() the header and AuthFilter use, so a tab never leads to a
+  redirect.
 --%>
 <%
     String tctx = request.getContextPath();
     String tactive = request.getParameter("active");
     if (tactive == null) tactive = "";
     User tUser = (User) session.getAttribute("user");
-    boolean tCounsellor = tUser != null && tUser.isCounsellor();
-    boolean tTeacher    = tUser != null && tUser.isTeacher();
-    boolean tAccountant = tUser != null && tUser.isAccountant();
-    boolean tHr         = tUser != null && tUser.isHr();
+    String tFamily = tUser == null ? "" : Role.familyOf(tUser.getRole());
+
+    // { activity, path, active-key, icon, label }
+    String[][] tAll;
+    if ("COUNSELLOR".equals(tFamily)) {
+        tAll = new String[][] {
+            { "SALES_LEAD", "/inquiries", "leads", "📥", "Leads" },
+            { "SALES_FOLLOWUP", "/followup", "followups", "📞", "Calls" },
+            { "SALES_COUNSELLOR", "/demo", "demos", "🎓", "Counsellors" },
+            { "SALES_LEAD", "/search", "search", "🔍", "Search" },
+            { "STUDENT", "/students", "students", "👥", "Students" },
+            { "FEES", "/fees", "fees", "💰", "Fees" } };
+    } else if ("TEACHER".equals(tFamily)) {
+        tAll = new String[][] {
+            { "ACAD_ATTENDANCE", "/attendance", "attendance", "📅", "Attend" },
+            { "ACAD_EXAM", "/exams", "exams", "🧪", "Exams" },
+            { "ACAD_ONLINE_EXAM", "/online-exams", "onlineexams", "💻", "Online" },
+            { "ACAD_MATERIAL", "/materials", "materials", "📚", "Material" },
+            { "ACAD_OMR", "/omr", "omr", "📄", "OMR" },
+            { "ACAD_TICKETS", "/manage-tickets", "tickets", "🎫", "Tickets" },
+            { "STUDENT", "/students", "students", "👥", "Students" } };
+    } else if ("ACCOUNTANT".equals(tFamily)) {
+        tAll = new String[][] {
+            { "FIN_FUND", "/fund", "fund", "🏦", "Fund" },
+            { "FIN_EXPENSE", "/expenses", "expenses", "🧾", "Expenses" },
+            { "FEES", "/fees", "fees", "💰", "Fees" },
+            { "FIN_WORK_ORDER", "/work-orders", "workorders", "📋", "Orders" },
+            { "FIN_VENDOR", "/vendors", "vendors", "🏢", "Vendors" } };
+    } else if ("HR".equals(tFamily)) {
+        tAll = new String[][] {
+            { "HR_STAFF", "/staff", "staff", "👤", "Staff" },
+            { "HR_STAFF", "/hr", "hr", "🗂️", "HR" },
+            { "SALES_LEAD", "/inquiries", "leads", "📥", "Leads" },
+            { "FEES", "/fees", "fees", "💰", "Dues" },
+            { "STUDENT", "/students", "students", "👥", "Students" } };
+    } else {
+        tAll = new String[][] {
+            { "STUDENT", "/students", "students", "👥", "Students" },
+            { "FEES", "/fees", "fees", "💰", "Fees" },
+            { "SALES_LEAD", "/inquiries", "leads", "📥", "Leads" },
+            { "ACAD_ATTENDANCE", "/attendance", "attendance", "📅", "Attend" },
+            { "ACAD_EXAM", "/exams", "exams", "🧪", "Exams" },
+            { "FIN_FUND", "/fund", "fund", "🏦", "Fund" },
+            { "ACAD_MATERIAL", "/materials", "materials", "📚", "Material" } };
+    }
 %>
 <nav class="tabbar">
-  <% if (tCounsellor) { %>
-    <a href="<%= tctx %>/my-dashboard" class="<%= "home".equals(tactive)?"active":"" %>"><span class="ti">🏠</span>Home</a>
-    <a href="<%= tctx %>/inquiries"    class="<%= "leads".equals(tactive)?"active":"" %>"><span class="ti">📥</span>Leads</a>
-    <a href="<%= tctx %>/followup"     class="<%= "followups".equals(tactive)?"active":"" %>"><span class="ti">📞</span>Calls</a>
-    <a href="<%= tctx %>/demo"         class="<%= "demos".equals(tactive)?"active":"" %>"><span class="ti">🎓</span>Counsellors</a>
-    <a href="<%= tctx %>/search"       class="<%= "search".equals(tactive)?"active":"" %>"><span class="ti">🔍</span>Search</a>
-  <% } else if (tTeacher) { %>
-    <a href="<%= tctx %>/teacher-dashboard" class="<%= "home".equals(tactive)?"active":"" %>"><span class="ti">🏠</span>Home</a>
-    <a href="<%= tctx %>/attendance" class="<%= "attendance".equals(tactive)?"active":"" %>"><span class="ti">📅</span>Attend</a>
-    <a href="<%= tctx %>/exams"      class="<%= "exams".equals(tactive)?"active":"" %>"><span class="ti">🧪</span>Exams</a>
-    <a href="<%= tctx %>/materials"  class="<%= "materials".equals(tactive)?"active":"" %>"><span class="ti">📚</span>Material</a>
-    <a href="<%= tctx %>/omr"        class="<%= "omr".equals(tactive)?"active":"" %>"><span class="ti">📄</span>OMR</a>
-  <% } else if (tAccountant) { %>
-    <a href="<%= tctx %>/finance-dashboard" class="<%= "home".equals(tactive)?"active":"" %>"><span class="ti">🏠</span>Home</a>
-    <a href="<%= tctx %>/fund"      class="<%= "fund".equals(tactive)?"active":"" %>"><span class="ti">🏦</span>Fund</a>
-    <a href="<%= tctx %>/expenses"  class="<%= "expenses".equals(tactive)?"active":"" %>"><span class="ti">🧾</span>Expenses</a>
-    <a href="<%= tctx %>/fees"      class="<%= "fees".equals(tactive)?"active":"" %>"><span class="ti">💰</span>Fees</a>
-    <a href="<%= tctx %>/work-orders" class="<%= "workorders".equals(tactive)?"active":"" %>"><span class="ti">📋</span>Orders</a>
-  <% } else if (tHr) { %>
-    <a href="<%= tctx %>/hr-dashboard" class="<%= "home".equals(tactive)?"active":"" %>"><span class="ti">🏠</span>Home</a>
-    <a href="<%= tctx %>/hr"        class="<%= "hr".equals(tactive)?"active":"" %>"><span class="ti">🗂️</span>HR</a>
-    <a href="<%= tctx %>/staff"     class="<%= "staff".equals(tactive)?"active":"" %>"><span class="ti">👤</span>Staff</a>
-    <a href="<%= tctx %>/inquiries" class="<%= "leads".equals(tactive)?"active":"" %>"><span class="ti">📥</span>Leads</a>
-    <a href="<%= tctx %>/fees"      class="<%= "fees".equals(tactive)?"active":"" %>"><span class="ti">💰</span>Dues</a>
-  <% } else { %>
-    <a href="<%= tctx %>/dashboard.jsp" class="<%= "home".equals(tactive)?"active":"" %>"><span class="ti">🏠</span>Home</a>
-    <a href="<%= tctx %>/students"      class="<%= "students".equals(tactive)?"active":"" %>"><span class="ti">👥</span>Students</a>
-    <a href="<%= tctx %>/fees"          class="<%= "fees".equals(tactive)?"active":"" %>"><span class="ti">💰</span>Fees</a>
-    <a href="<%= tctx %>/attendance"    class="<%= "attendance".equals(tactive)?"active":"" %>"><span class="ti">📅</span>Attend</a>
-    <a href="<%= tctx %>/exams"         class="<%= "exams".equals(tactive)?"active":"" %>"><span class="ti">🧪</span>Exams</a>
+  <% if (tUser != null) { %>
+    <a href="<%= tctx + tUser.homePath() %>" class="<%= "home".equals(tactive)?"active":"" %>"><span class="ti">🏠</span>Home</a>
+    <%  int shown = 0;
+        for (String[] t : tAll) {
+            if (shown == 4) break;
+            // /hr is decided by its tab, not the path table; bare /hr opens the attendance tab
+            boolean ok = "/hr".equals(t[1]) ? tUser.can("HR_STAFF") && tUser.can("HR_ATTENDANCE")
+                                            : tUser.mayOpen(t[1]);
+            if (!ok) continue;
+            shown++; %>
+      <a href="<%= tctx + t[1] %>" class="<%= t[2].equals(tactive)?"active":"" %>"><span class="ti"><%= t[3] %></span><%= t[4] %></a>
+    <% } %>
   <% } %>
 </nav>

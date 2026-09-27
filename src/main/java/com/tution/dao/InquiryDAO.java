@@ -101,7 +101,7 @@ public class InquiryDAO {
                 sql.append("AND i.status NOT IN ('CONVERTED','NOT_INTERESTED','LOST') ");
             }
             if (f.scopeCounsellorId != null) {
-                sql.append("AND i.counsellor_id = ? ");
+                sql.append("AND ").append(Scope.teamOf("i.counsellor_id")).append(' ');
                 args.add(f.scopeCounsellorId);
             }
         }

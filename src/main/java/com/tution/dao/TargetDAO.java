@@ -76,8 +76,8 @@ public class TargetDAO {
             + "  LEFT JOIN counsellor_targets t "
             + "         ON t.counsellor_id = u.user_id "
             + "        AND t.period_type = ? AND t.period_start = ? "
-            + " WHERE u.is_active = 1 AND u.role IN ('COUNSELLOR','ADMIN') "
-            + " ORDER BY u.role = 'COUNSELLOR' DESC, u.full_name";
+            + " WHERE u.is_active = 1 AND u.role IN ('COUNSELLOR','ABM','ADMIN') "
+            + " ORDER BY u.role IN ('COUNSELLOR','ABM') DESC, u.full_name";
 
         List<CounsellorTarget> out = new ArrayList<>();
         try (Connection con = DBConnection.getConnection();

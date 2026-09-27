@@ -139,45 +139,45 @@
     <div class="warnbar">
       <b><%= overdrawn %></b> fund<%= overdrawn==1?" is":"s are" %> overdrawn &mdash; more has been
       spent than credited. Usually a top-up that has not been entered yet.
-      <a href="<%= ctx %>/fund">Check the statement &rarr;</a>
+      <% if (user.mayOpen("/fund")) { %><a href="<%= ctx %>/fund">Check the statement &rarr;</a><% } %>
     </div>
   <% } %>
 
   <div class="tiles">
-    <a class="tile <%= held.signum()<0 ? "red" : "" %>" href="<%= ctx %>/fund">
+    <% if (user.mayOpen("/fund")) { %><a class="tile <%= held.signum()<0 ? "red" : "" %>" href="<%= ctx %>/fund">
       <div class="lb">Held across all funds</div>
       <div class="vl">Rs. <%= Money.fmt(held) %></div>
       <div class="sb">the money available to spend</div>
-    </a>
-    <a class="tile red" href="<%= ctx %>/expenses">
+    </a><% } %>
+    <% if (user.mayOpen("/expenses")) { %><a class="tile red" href="<%= ctx %>/expenses">
       <div class="lb">Spent this month</div>
       <div class="vl">Rs. <%= spend==null?"0.00":Money.fmt(spend.spent) %></div>
       <div class="sb"><%= spend==null?0:spend.vouchers %> voucher<%=
         (spend!=null&&spend.vouchers==1)?"":"s" %>, live only</div>
-    </a>
-    <a class="tile blue" href="<%= ctx %>/fees">
+    </a><% } %>
+    <% if (user.mayOpen("/fees")) { %><a class="tile blue" href="<%= ctx %>/fees">
       <div class="lb">Fees collected</div>
       <div class="vl">Rs. <%= st==null?"0":Money.fmt(BigDecimal.valueOf(st.revenueMtd)) %></div>
       <div class="sb">this month</div>
-    </a>
-    <a class="tile <%= (st!=null && st.pendingFees>0) ? "red" : "" %>" href="<%= ctx %>/fees">
+    </a><% } %>
+    <% if (user.mayOpen("/fees")) { %><a class="tile <%= (st!=null && st.pendingFees>0) ? "red" : "" %>" href="<%= ctx %>/fees">
       <div class="lb">Fees outstanding</div>
       <div class="vl">Rs. <%= st==null?"0":Money.fmt(BigDecimal.valueOf(st.pendingFees)) %></div>
       <div class="sb">owed to the institute</div>
-    </a>
-    <a class="tile <%= (payable!=null && payable.remaining.signum()>0) ? "red" : "" %>"
+    </a><% } %>
+    <% if (user.mayOpen("/work-orders")) { %><a class="tile <%= (payable!=null && payable.remaining.signum()>0) ? "red" : "" %>"
        href="<%= ctx %>/work-orders">
       <div class="lb">Payables</div>
       <div class="vl">Rs. <%= payable==null?"0.00":Money.fmt(payable.remaining) %></div>
       <div class="sb">owed on <%= payable==null?0:payable.orders %> work order<%=
         (payable!=null&&payable.orders==1)?"":"s" %></div>
-    </a>
+    </a><% } %>
   </div>
 
   <div class="grid2">
     <div>
       <div class="card">
-        <h2>Where the money sits<a href="<%= ctx %>/fund">Statements &rarr;</a></h2>
+        <h2>Where the money sits<% if (user.mayOpen("/fund")) { %><a href="<%= ctx %>/fund">Statements &rarr;</a><% } %></h2>
         <p class="hint">Balance of each fund. Bars are relative to the largest.</p>
         <% for (FundAccount f : funds) {
              boolean neg = f.isOverdrawn();
@@ -193,12 +193,12 @@
         <% } %>
         <% if (funds.isEmpty()) { %>
           <p class="muted" style="font-size:13px;margin:0">No fund yet.
-             <a href="<%= ctx %>/fund?new=1">Create one &rarr;</a></p>
+             <% if (user.mayOpen("/fund")) { %><a href="<%= ctx %>/fund?new=1">Create one &rarr;</a><% } %></p>
         <% } %>
       </div>
 
       <div class="card">
-        <h2>Latest movements<a href="<%= ctx %>/fund">All &rarr;</a></h2>
+        <h2>Latest movements<% if (user.mayOpen("/fund")) { %><a href="<%= ctx %>/fund">All &rarr;</a><% } %></h2>
         <p class="hint">The most recent entries across every fund.</p>
         <table class="t">
           <% for (FundTransaction t : recent) { %>
@@ -220,7 +220,7 @@
 
     <div>
       <div class="card">
-        <h2>This month<a href="<%= ctx %>/expenses">Expenses &rarr;</a></h2>
+        <h2>This month<% if (user.mayOpen("/expenses")) { %><a href="<%= ctx %>/expenses">Expenses &rarr;</a><% } %></h2>
         <div class="kv">
           <div class="k">Spent</div>
           <div class="v">Rs. <%= spend==null?"0.00":Money.fmt(spend.spent) %></div>
@@ -255,24 +255,24 @@
         <h2>Go to</h2>
         <p class="hint">The screens behind the figures above.</p>
         <div class="goto">
-          <a href="<%= ctx %>/fund"><span class="ic">🏦</span>
+          <% if (user.mayOpen("/fund")) { %><a href="<%= ctx %>/fund"><span class="ic">🏦</span>
             <span class="tx"><span class="t1">Fund statements</span>
-              <span class="t2"><%= funds.size() %> fund<%= funds.size()==1?"":"s" %></span></span></a>
-          <a href="<%= ctx %>/expenses"><span class="ic">🧾</span>
+              <span class="t2"><%= funds.size() %> fund<%= funds.size()==1?"":"s" %></span></span></a><% } %>
+          <% if (user.mayOpen("/expenses")) { %><a href="<%= ctx %>/expenses"><span class="ic">🧾</span>
             <span class="tx"><span class="t1">Record an expense</span>
-              <span class="t2"><%= spend==null?0:spend.vouchers %> this month</span></span></a>
-          <a href="<%= ctx %>/vendors"><span class="ic">🏬</span>
+              <span class="t2"><%= spend==null?0:spend.vouchers %> this month</span></span></a><% } %>
+          <% if (user.mayOpen("/vendors")) { %><a href="<%= ctx %>/vendors"><span class="ic">🏬</span>
             <span class="tx"><span class="t1">Vendors</span>
-              <span class="t2">Who we pay</span></span></a>
-          <a href="<%= ctx %>/work-orders"><span class="ic">📋</span>
+              <span class="t2">Who we pay</span></span></a><% } %>
+          <% if (user.mayOpen("/work-orders")) { %><a href="<%= ctx %>/work-orders"><span class="ic">📋</span>
             <span class="tx"><span class="t1">Work orders</span>
-              <span class="t2"><%= payable==null?0:payable.orders %> on the books</span></span></a>
-          <a href="<%= ctx %>/exam-fees"><span class="ic">🎟️</span>
+              <span class="t2"><%= payable==null?0:payable.orders %> on the books</span></span></a><% } %>
+          <% if (user.mayOpen("/exam-fees")) { %><a href="<%= ctx %>/exam-fees"><span class="ic">🎟️</span>
             <span class="tx"><span class="t1">Exam fees</span>
-              <span class="t2">Take at the counter</span></span></a>
-          <a href="<%= ctx %>/reports"><span class="ic">📊</span>
+              <span class="t2">Take at the counter</span></span></a><% } %>
+          <% if (user.canSeeManagement()) { %><a href="<%= ctx %>/reports"><span class="ic">📊</span>
             <span class="tx"><span class="t1">Reports</span>
-              <span class="t2">Collection &amp; more</span></span></a>
+              <span class="t2">Collection &amp; more</span></span></a><% } %>
         </div>
       </div>
     </div>

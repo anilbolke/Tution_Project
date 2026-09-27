@@ -126,7 +126,7 @@ public class SalesStatsDAO {
     public List<SalesStats> leaderboard() throws SQLException {
         List<SalesStats> out = new ArrayList<>();
         String sql = "SELECT user_id, full_name FROM users "
-                   + "WHERE is_active = 1 AND role IN ('COUNSELLOR','ADMIN') ORDER BY full_name";
+                   + "WHERE is_active = 1 AND role IN ('COUNSELLOR','ABM','ADMIN') ORDER BY full_name";
         List<int[]> ids = new ArrayList<>();
         List<String> names = new ArrayList<>();
         try (Connection con = DBConnection.getConnection();
@@ -155,11 +155,11 @@ public class SalesStatsDAO {
     // ── helpers ──
 
     private static String where(Integer counsellorId, String col) {
-        return (counsellorId == null) ? "" : "WHERE " + col + " = ? ";
+        return (counsellorId == null) ? "" : "WHERE " + Scope.teamOf(col) + " ";
     }
 
     private static String and(Integer counsellorId, String col) {
-        return (counsellorId == null) ? "" : "AND " + col + " = ? ";
+        return (counsellorId == null) ? "" : "AND " + Scope.teamOf(col) + " ";
     }
 
     private static void bind(PreparedStatement ps, Integer counsellorId) throws SQLException {

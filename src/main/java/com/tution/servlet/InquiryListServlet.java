@@ -52,15 +52,13 @@ public class InquiryListServlet extends HttpServlet {
         f.overdueOnly  = "1".equals(req.getParameter("overdue"));
         f.counsellorId = intOrNull(req.getParameter("counsellor"));
 
-        // A counsellor only ever sees their own pipeline.
-        if (user.isCounsellor()) {
-            f.scopeCounsellorId = Integer.valueOf(user.getUserId());
-        }
+        // A counsellor only ever sees their own pipeline; an ABM their team's.
+        f.scopeCounsellorId = com.tution.dao.Scope.of(user);
 
         try {
             List<Inquiry> inquiries = inquiryDAO.find(f);
             req.setAttribute("inquiries", inquiries);
-            req.setAttribute("counsellors", masterDAO.counsellors());
+            req.setAttribute("counsellors", masterDAO.counsellors(f.scopeCounsellorId));
             req.setAttribute("sources", masterDAO.leadSources());
         } catch (SQLException e) {
             getServletContext().log("Load inquiries failed", e);

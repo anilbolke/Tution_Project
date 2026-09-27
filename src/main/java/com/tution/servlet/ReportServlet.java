@@ -39,14 +39,16 @@ public class ReportServlet extends HttpServlet {
 
         String type = req.getParameter("type");
         if (type == null || type.isEmpty()) {
-            type = "lead-source";
+            // The first report this role holds - not a fixed one it may not have.
+            java.util.List<String[]> mine = ReportDAO.types(user);
+            type = mine.isEmpty() ? "lead-source" : mine.get(0)[0];
         }
         // The finance reports carry what /fund, /vendors and /expenses are locked
         // down for, so the same lock has to apply here - a report picker is not
         // a way round a permission.
-        if (ReportDAO.isAdminOnly(type) && !user.isAdmin()) {
+        if (!user.can(com.tution.dao.AccessDAO.reportActivity(type))) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN,
-                           "That report is for the administrator.");
+                           "Your role does not have this report.");
             return;
         }
         String from = req.getParameter("from");
@@ -70,13 +72,13 @@ public class ReportServlet extends HttpServlet {
         }
 
         try {
-            req.setAttribute("report", reportDAO.run(type, from, to));
+            req.setAttribute("report", reportDAO.run(type, from, to, com.tution.dao.Scope.of(user)));
         } catch (SQLException e) {
             getServletContext().log("Report '" + type + "' failed", e);
             req.setAttribute("error", "Could not build that report. Please try again.");
         }
 
-        req.setAttribute("types", ReportDAO.types(user.isAdmin()));
+        req.setAttribute("types", ReportDAO.types(user));
         req.setAttribute("type", type);
         req.setAttribute("from", from);
         req.setAttribute("to", to);

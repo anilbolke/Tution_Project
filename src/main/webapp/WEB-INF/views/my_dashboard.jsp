@@ -220,41 +220,44 @@
     </div>
   <% } %>
 
-  <% if (user.isAdmin()) { %>
+  <% if (Boolean.TRUE.equals(request.getAttribute("mayPick"))) { %>
     <form class="picker" method="get" action="<%= ctx %>/my-dashboard">
       <label style="font-size:12.5px;color:var(--muted);font-weight:700;">Viewing:</label>
       <select name="counsellorId" onchange="this.form.submit()">
+        <% if (counsellors != null && !counsellors.containsKey(user.getUserId())) { %>
+          <option value="<%= user.getUserId() %>"<%= targetId != null && targetId.intValue() == user.getUserId() ? " selected" : "" %>>Me</option>
+        <% } %>
         <% if (counsellors != null) for (Map.Entry<Integer,String> e : counsellors.entrySet()) {
              boolean on = targetId != null && targetId.intValue() == e.getKey(); %>
           <option value="<%= e.getKey() %>"<%= on ? " selected" : "" %>><%= esc(e.getValue()) %></option>
         <% } %>
       </select>
-      <a href="<%= ctx %>/dashboard.jsp" style="font-size:12.5px;color:var(--muted);">← Institute dashboard</a>
+      <% if (user.mayOpen("/dashboard.jsp")) { %><a href="<%= ctx %>/dashboard.jsp" style="font-size:12.5px;color:var(--muted);">← Institute dashboard</a><% } %>
     </form>
   <% } %>
 
   <% if (st != null) { %>
   <div class="kpis">
-    <a class="kpi red" href="<%= ctx %>/followup?view=overdue">
+    <% if (user.mayOpen("/followup")) { %><a class="kpi red" href="<%= ctx %>/followup?view=overdue">
       <div class="n"><%= st.followupsOverdue %></div>
       <div class="l">Overdue Follow-ups</div>
       <div class="s">need chasing now</div>
-    </a>
-    <a class="kpi amber" href="<%= ctx %>/followup?view=today">
+    </a><% } %>
+    <% if (user.mayOpen("/followup")) { %><a class="kpi amber" href="<%= ctx %>/followup?view=today">
       <div class="n"><%= st.followupsToday %></div>
       <div class="l">Due Today</div>
       <div class="s">calls scheduled for today</div>
-    </a>
-    <a class="kpi blue" href="<%= ctx %>/demo">
+    </a><% } %>
+    <% if (user.mayOpen("/demo")) { %><a class="kpi blue" href="<%= ctx %>/demo">
       <div class="n"><%= st.demosToday %></div>
       <div class="l">Demos Today</div>
       <div class="s"><%= st.demosUpcoming %> in the next 7 days</div>
-    </a>
-    <a class="kpi" href="<%= ctx %>/inquiries">
+    </a><% } %>
+    <% if (user.mayOpen("/inquiries")) { %><a class="kpi" href="<%= ctx %>/inquiries">
       <div class="n"><%= st.leadsTotal %></div>
       <div class="l">Open Leads</div>
       <div class="s"><%= st.leadsNew %> not yet contacted</div>
-    </a>
+    </a><% } %>
   </div>
 
   <div class="kpis">
@@ -282,7 +285,7 @@
   <div class="cols">
     <div>
       <div class="card">
-        <h3>Follow-ups Due <a href="<%= ctx %>/followup">Open the queue →</a></h3>
+        <h3>Follow-ups Due <% if (user.mayOpen("/followup")) { %><a href="<%= ctx %>/followup">Open the queue →</a><% } %></h3>
         <% if (dueLeads == null || dueLeads.isEmpty()) { %>
           <div class="empty">✅ Nothing due. You are all caught up.</div>
         <% } else { %>
@@ -294,7 +297,7 @@
                  boolean late = q.isOverdue(today); %>
               <tr class="<%= late ? "late" : "" %>">
                 <td class="<%= late ? "due-late" : "" %>"><%= d(Dates.display(q.getNextFollowupDate())) %></td>
-                <td><a class="nm" href="<%= ctx %>/lead?id=<%= q.getInquiryId() %>"><%= esc(q.getFullName()) %></a></td>
+                <td><% if (user.mayOpen("/lead")) { %><a class="nm" href="<%= ctx %>/lead?id=<%= q.getInquiryId() %>"><%= esc(q.getFullName()) %></a><% } %></td>
                 <td><%= d(q.getMobile()) %></td>
                 <td><span class="badge <%= prioClass(q.getPriority()) %>"><%= d(q.getPriority()) %></span></td>
                 <td><span class="badge <%= badgeClass(q.getStatus()) %>"><%= d(q.getStatus()) %></span></td>
@@ -305,13 +308,13 @@
           <% if (dueLeads.size() > 10) { %>
             <p style="font-size:12.5px;color:var(--muted);margin-top:10px;">
               and <%= dueLeads.size() - 10 %> more —
-              <a href="<%= ctx %>/followup?view=all" style="color:var(--green);font-weight:600;">see all →</a></p>
+              <% if (user.mayOpen("/followup")) { %><a href="<%= ctx %>/followup?view=all" style="color:var(--green);font-weight:600;">see all →</a><% } %></p>
           <% } %>
         <% } %>
       </div>
 
       <div class="card">
-        <h3>Upcoming Counsellors <a href="<%= ctx %>/demo">Counsellor diary →</a></h3>
+        <h3>Upcoming Counsellors <% if (user.mayOpen("/demo")) { %><a href="<%= ctx %>/demo">Counsellor diary →</a><% } %></h3>
         <% if (todayDemos == null || todayDemos.isEmpty()) { %>
           <div class="empty">No Counsellors booked in the next 7 days.</div>
         <% } else { %>
@@ -322,7 +325,7 @@
               <tr class="<%= today.equals(dm.getDemoDate()) ? "late" : "" %>">
                 <td><b><%= d(dm.getDemoDate()) %></b></td>
                 <td><%= d(dm.getDemoTime()) %></td>
-                <td><a class="nm" href="<%= ctx %>/lead?id=<%= dm.getInquiryId() %>"><%= esc(dm.getLeadName()) %></a></td>
+                <td><% if (user.mayOpen("/lead")) { %><a class="nm" href="<%= ctx %>/lead?id=<%= dm.getInquiryId() %>"><%= esc(dm.getLeadName()) %></a><% } %></td>
                 <td><%= d(dm.getSubject()) %></td>
                 <td><%= d(dm.getFacultyName()) %></td>
               </tr>
@@ -352,8 +355,8 @@
                int pct = (int) Math.round(n * 100.0 / max); %>
             <div class="f-row">
               <div class="f-top">
-                <a class="nm" style="font-weight:600;font-size:12.5px;"
-                   href="<%= ctx %>/inquiries?status=<%= r[3] %>"><%= r[0] %></a>
+                <% if (user.mayOpen("/inquiries")) { %><a class="nm" style="font-weight:600;font-size:12.5px;"
+                   href="<%= ctx %>/inquiries?status=<%= r[3] %>"><%= r[0] %></a><% } %>
                 <b><%= n %></b>
               </div>
               <div class="f-bar"><div class="f-fill <%= r[2] %>" style="width:<%= Math.min(100, pct) %>%;"></div></div>
@@ -364,7 +367,7 @@
       <% } %>
 
       <div class="card">
-        <h3>Hot Leads <a href="<%= ctx %>/inquiries?priority=Hot">See all →</a></h3>
+        <h3>Hot Leads <% if (user.mayOpen("/inquiries")) { %><a href="<%= ctx %>/inquiries?priority=Hot">See all →</a><% } %></h3>
         <% if (hotLeads == null || hotLeads.isEmpty()) { %>
           <div class="empty">No hot leads right now.</div>
         <% } else { %>
@@ -373,7 +376,7 @@
             <tbody>
             <% int hs = 0; for (Inquiry q : hotLeads) { if (hs++ >= 8) break; %>
               <tr>
-                <td><a class="nm" href="<%= ctx %>/lead?id=<%= q.getInquiryId() %>"><%= esc(q.getFullName()) %></a></td>
+                <td><% if (user.mayOpen("/lead")) { %><a class="nm" href="<%= ctx %>/lead?id=<%= q.getInquiryId() %>"><%= esc(q.getFullName()) %></a><% } %></td>
                 <td><%= d(q.getMobile()) %></td>
                 <td><span class="badge <%= badgeClass(q.getStatus()) %>"><%= d(q.getStatus()) %></span></td>
               </tr>

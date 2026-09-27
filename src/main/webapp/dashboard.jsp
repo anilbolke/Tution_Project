@@ -20,21 +20,28 @@
     java.util.List<com.tution.model.CounsellorTarget> targets = null;
     String targetQuarter = null;
     // Institute money: the fund, what has been spent, what is owed to vendors and
-    // what exam candidates still owe. Admin only, and independent of the sales
+    // what exam candidates still owe. For roles with a finance activity, independent of the sales
     // strip so one failing does not blank the other.
     com.tution.dao.FinanceStatsDAO.FinanceStats fin = null;
-    if (user.isAdmin()) {
+    // Institute-wide sales figures are for roles that hold them AND are not scoped
+    // to their own leads (counsellor/ABM see their own on /my-dashboard).
+    boolean wideSales = !user.isCounsellor() || user.isAdmin();
+    if (user.can("SALES_TARGET") && wideSales) {
         try {
             com.tution.dao.TargetDAO tdao = new com.tution.dao.TargetDAO();
             java.time.LocalDate qs = com.tution.dao.TargetDAO.quarterStart(java.time.LocalDate.now());
             targets = tdao.forPeriod("QUARTER", qs, com.tution.dao.TargetDAO.quarterEnd(qs));
             targetQuarter = com.tution.dao.TargetDAO.quarterLabel(qs);
         } catch (Exception e) { /* the dashboard must still render without targets */ }
+    }
+    if (user.can("SALES_LEAD") && wideSales) {
         try {
             SalesStatsDAO sdao = new SalesStatsDAO();
             sales = sdao.load(null);
             board = sdao.leaderboard();
         } catch (Exception e) { /* dashboard still renders without the sales strip */ }
+    }
+    if (user.canSeeFinance()) {
         try {
             fin = new com.tution.dao.FinanceStatsDAO().load();
         } catch (Exception e) { /* and still renders without the finance strip */ }
@@ -162,34 +169,49 @@
 
   <% if (stats != null) { %>
   <div class="stats-grid">
+    <% if (user.mayOpen("/students")) { %>
     <a class="stat-card" href="<%= ctx %>/students" style="text-decoration:none;">
       <div class="ic2">👥</div>
       <div><div class="v"><%= stats.students %></div><div class="l">Students</div></div>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/inquiries")) { %>
     <a class="stat-card amber" href="<%= ctx %>/inquiries" style="text-decoration:none;">
       <div class="ic2">📥</div>
       <div><div class="v"><%= stats.inquiriesNew %> <span style="font-size:13px;color:var(--muted);font-weight:600;">/ <%= stats.inquiriesTotal %></span></div><div class="l">New Inquiries</div></div>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/fees")) { %>
     <a class="stat-card" href="<%= ctx %>/fees" style="text-decoration:none;">
       <div class="ic2">💰</div>
       <div><div class="v"><%= FeeCalculator.inr(stats.collected) %></div><div class="l">Fees Collected</div></div>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/fees")) { %>
     <a class="stat-card" href="<%= ctx %>/fees" style="text-decoration:none;">
       <div class="ic2">📆</div>
       <div><div class="v"><%= FeeCalculator.inr(stats.collectedToday) %></div><div class="l">Today's Collection</div></div>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/fees")) { %>
     <a class="stat-card red" href="<%= ctx %>/fees" style="text-decoration:none;">
       <div class="ic2">🧾</div>
       <div><div class="v"><%= FeeCalculator.inr(stats.outstanding) %></div><div class="l">Outstanding</div></div>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/attendance")) { %>
     <a class="stat-card blue" href="<%= ctx %>/attendance" style="text-decoration:none;">
       <div class="ic2">📅</div>
       <div><div class="v"><%= stats.presentToday %><span style="font-size:13px;color:var(--muted);font-weight:600;">/<%= stats.markedToday %></span></div><div class="l">Present Today</div></div>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/exams")) { %>
     <a class="stat-card blue" href="<%= ctx %>/exams" style="text-decoration:none;">
       <div class="ic2">🧪</div>
       <div><div class="v"><%= stats.exams %></div><div class="l">Exams</div></div>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/fees")) { %>
     <a class="stat-card purple" href="<%= ctx %>/fees" style="text-decoration:none;">
       <div class="ic2">📋</div>
       <div class="fee-break">
@@ -198,70 +220,101 @@
         <div><span class="fb-v" style="color:#C0392B"><%= stats.feePending %></span><span class="fb-l">Pending</span></div>
       </div>
     </a>
+    <% } %>
   </div>
   <% } %>
 
   <div class="module-grid">
+    <% if (user.mayOpen("/admission.jsp")) { %>
     <a class="module-card" href="<%= ctx %>/admission.jsp">
       <div class="ic">📝</div><h3>Admissions</h3>
       <p>Student registration, document upload &amp; batch allocation.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/inquiries")) { %>
     <a class="module-card" href="<%= ctx %>/inquiries">
       <div class="ic">📥</div><h3>Leads &amp; Enquiries</h3>
       <p>The sales pipeline — capture, filter &amp; convert enquiries.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/followup")) { %>
     <a class="module-card" href="<%= ctx %>/followup">
       <div class="ic">📞</div><h3>Follow-ups</h3>
       <p>Today's calls, overdue chases &amp; counselling history.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/demo")) { %>
     <a class="module-card" href="<%= ctx %>/demo">
       <div class="ic">🎓</div><h3>Counsellor Classes</h3>
       <p>Book trial classes and record Counsellor feedback.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/reminders")) { %>
     <a class="module-card" href="<%= ctx %>/reminders">
       <div class="ic">🔔</div><h3>Reminders</h3>
       <p>Follow-up, Counsellor &amp; fee-due nudges over WhatsApp.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/students")) { %>
     <a class="module-card" href="<%= ctx %>/students">
       <div class="ic">👥</div><h3>Students</h3>
       <p>View all admitted students &amp; their details.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/fees")) { %>
     <a class="module-card" href="<%= ctx %>/fees">
       <div class="ic">💰</div><h3>Fee Management</h3>
       <p>Total / paid / outstanding per student, slab-wise.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/fees")) { %>
     <a class="module-card" href="<%= ctx %>/fees">
       <div class="ic">🧾</div><h3>Payment Collection</h3>
       <p>Record Cash / UPI / bank payments &amp; print receipts.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/attendance")) { %>
     <a class="module-card" href="<%= ctx %>/attendance">
       <div class="ic">📅</div><h3>Attendance</h3>
       <p>Daily marking (P/A/Late/Leave) &amp; per-student reports.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/exams")) { %>
     <a class="module-card" href="<%= ctx %>/exams">
       <div class="ic">🧪</div><h3>Examination</h3>
       <p>Create exams, enter subject-wise marks.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/exams")) { %>
     <a class="module-card" href="<%= ctx %>/exams">
       <div class="ic">📊</div><h3>Exam Results</h3>
       <p>Totals, %, grade, rank &amp; printable report cards.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/reports")) { %>
     <a class="module-card" href="<%= ctx %>/reports">
       <div class="ic">📈</div><h3>Sales Reports</h3>
       <p>Lead source, counsellor performance, collection &amp; ageing — with Excel export.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/materials")) { %>
     <a class="module-card" href="<%= ctx %>/materials">
       <div class="ic">📚</div><h3>Learning Materials</h3>
       <p>Upload study PDFs &amp; add e-content YouTube links.</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/omr")) { %>
     <a class="module-card" href="<%= ctx %>/omr">
       <div class="ic">📄</div><h3>OMR Scanner</h3>
       <p>Read NEET answer sheets locally &amp; auto-score (free).</p>
     </a>
+    <% } %>
+    <% if (user.mayOpen("/manage-tickets")) { %>
     <a class="module-card" href="<%= ctx %>/manage-tickets">
       <div class="ic">🎫</div><h3>Support Tickets</h3>
       <p>View &amp; respond to concerns raised by students.</p>
     </a>
+    <% } %>
   </div>
 
   <%-- Quarterly targets. Kept apart from the leaderboard below because that is a
@@ -359,7 +412,7 @@
             <td><%= FeeCalculator.inr(b.revenueMtd) %></td>
             <td><%= b.actionsDue() > 0
                     ? "<span class=\"due\">" + b.actionsDue() + "</span>" : "0" %></td>
-            <td><a class="open" href="<%= ctx %>/my-dashboard?counsellorId=<%= b.counsellorId %>">View →</a></td>
+            <td><% if (user.isAdmin()) { %><a class="open" href="<%= ctx %>/my-dashboard?counsellorId=<%= b.counsellorId %>">View →</a><% } %></td>
           </tr>
         <% } %>
         </tbody>

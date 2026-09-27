@@ -34,6 +34,8 @@
     long[] totals = (long[]) request.getAttribute("totals");
     if (totals == null) totals = new long[4];
 
+    // counsellor / ABM: their own (team's) rows, nothing editable
+    boolean ro = Boolean.TRUE.equals(request.getAttribute("readOnly"));
     String error = (String) request.getAttribute("error");
     String flash = (String) session.getAttribute("flash");
     String flashError = (String) session.getAttribute("flashError");
@@ -122,6 +124,10 @@
       whether the admission closes, not the instalment plan behind it. Cash collected is shown
       alongside for reference.
     </p>
+    <% if (ro) { %>
+      <p class="hint"><b>Read-only.</b> These are your targets<%= rows.size() > 1 ? " and your team's" : "" %>,
+        set by management.</p>
+    <% } %>
     <div class="qnav">
       <a class="btn btn-light" href="<%= ctx %>/targets?q=<%= prevQ %>">&larr; Previous</a>
       <span class="lbl"><%= esc(periodLabel) %></span>
@@ -133,6 +139,7 @@
     </div>
 
     <form method="post" action="<%= ctx %>/targets">
+      <fieldset <%= ro ? "disabled" : "" %> style="border:0;margin:0;padding:0;min-width:0">
       <input type="hidden" name="periodStart" value="<%= esc(periodStart) %>">
       <div class="scroll">
         <table class="t">
@@ -188,12 +195,15 @@
           </tr>
         </table>
       </div>
+      <% if (!ro) { %>
       <div style="margin-top:12px;">
         <button class="btn" type="submit">Save targets</button>
         <span class="muted" style="margin-left:8px;">
           Leave a row blank to record no target &mdash; that reads differently from a target of zero.
         </span>
       </div>
+      <% } %>
+      </fieldset>
     </form>
   </div>
 
@@ -234,6 +244,7 @@
         <% } %>
       </div>
       <form method="post" action="<%= ctx %>/targets">
+        <fieldset <%= ro ? "disabled" : "" %> style="border:0;margin:0;padding:0;min-width:0">
         <input type="hidden" name="scope" value="counsellor-course">
         <input type="hidden" name="periodStart" value="<%= esc(periodStart) %>">
         <input type="hidden" name="counsellorId" value="<%= selCounsellorId %>">
@@ -290,12 +301,15 @@
             </tr>
           </table>
         </div>
+        <% if (!ro) { %>
         <div style="margin-top:12px;">
           <button class="btn" type="submit">Save course targets</button>
           <span class="muted" style="margin-left:8px;">
             Leave a row blank to record no target &mdash; that reads differently from a target of zero.
           </span>
         </div>
+        <% } %>
+        </fieldset>
       </form>
     <% } %>
     <% } %>

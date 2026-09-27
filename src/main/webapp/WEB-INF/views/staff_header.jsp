@@ -7,11 +7,10 @@
   which is why every role saw every module, and why the logo and "Dashboard"
   link always pointed at the institute-wide dashboard.
 
-  What each role gets:
-    ADMIN       everything
-    STAFF       everything operational, minus the counsellor's own sales tile
-    COUNSELLOR  sales only — no academics, no institute dashboard, no reports
-    TEACHER     academics only — no money, no sales pipeline
+  What each role gets: whatever its column in the role/activity matrix says
+  (Doc/Mapping/Work Flow.xlsx, editable at /role-mapping). Every link below is
+  shown only when user.can(<activity>) - the same question AuthFilter asks - so
+  the menu and the doors always agree. ADMIN holds every activity.
 
   Usage:
     <jsp:include page="/WEB-INF/views/staff_header.jsp">
@@ -25,24 +24,28 @@
     User hUser = (User) session.getAttribute("user");
 
     boolean hAdmin      = hUser != null && hUser.isAdmin();
-    boolean hCounsellor = hUser != null && hUser.isCounsellor();
-    boolean hTeacher    = hUser != null && hUser.isTeacher();
-    boolean hAccountant = hUser != null && hUser.isAccountant();
-    boolean hHr         = hUser != null && hUser.isHr();
-    // Every question below is now an allow-list on User. They used to be written
-    // as "not a teacher" / "not a counsellor", which silently offered each new
-    // role the whole menu the moment ACCOUNTANT and HR were added.
-    boolean hSales      = hUser != null && hUser.canSeeSales();
-    boolean hLeads      = hUser != null && hUser.canSeeLeads();
-    boolean hFees       = hUser != null && hUser.canSeeFees();
-    boolean hAcademic   = hUser != null && hUser.canSeeAcademic();
-    boolean hMgmt       = hUser != null && hUser.canSeeManagement();
-    boolean hTargets    = hUser != null && hUser.canSeeTargets();
-    boolean hFinance    = hUser != null && hUser.canSeeFinance();
-    boolean hPeople     = hUser != null && hUser.canSeePeople();
-    // Front-desk money work — matching ExamFeeServlet.
-    boolean hOffice     = hUser != null && (hUser.isAdmin() || hUser.isStaff()
-                                            || hUser.isAccountant());
+    // hCan.contains("X") == hUser.can("X"), read once per page
+    java.util.Set<String> hCan = new java.util.HashSet<String>();
+    if (hUser != null) {
+        for (com.tution.dao.AccessDAO.Activity a : com.tution.dao.AccessDAO.activities()) {
+            if (hUser.can(a.code)) hCan.add(a.code);
+        }
+    }
+    boolean hLeads    = hCan.contains("SALES_LEAD");
+    boolean hSalesAny = hLeads || hCan.contains("SALES_FOLLOWUP") || hCan.contains("SALES_COUNSELLOR")
+                     || hCan.contains("SALES_REMINDER") || hCan.contains("SALES_TARGET");
+    boolean hAcadAny = false, hFinAny = false, hRptAny = false;
+    for (String c : hCan) {
+        if (c.startsWith("ACAD_")) hAcadAny = true;
+        if (c.startsWith("FIN_"))  hFinAny  = true;
+        if (c.startsWith("RPT_"))  hRptAny  = true;
+    }
+    // /hr is the register of everyone - it needs HR_STAFF plus the tab's own activity
+    String  hHrTab = !hCan.contains("HR_STAFF") ? null
+                   : hCan.contains("HR_ATTENDANCE") ? "attendance"
+                   : hCan.contains("HR_LEAVE")      ? "leave"
+                   : hCan.contains("HR_SALARY")     ? "salary" : null;
+    boolean hPeopleAny = hCan.contains("HR_STAFF");
     String  hHome       = hctx + (hUser == null ? "/dashboard.jsp" : hUser.homePath());
 
     // A role like ADMIN can see every link below, which used to mean 25+ items
@@ -72,37 +75,22 @@
   </a>
   <nav>
     <span class="sp-topnav">
-      <% if (hCounsellor) { %>
-        <a href="<%= hctx %>/my-dashboard" class="<%= "home".equals(hactive)?"active":"" %>">My Dashboard</a>
-      <% } else if (hTeacher) { %>
-        <a href="<%= hctx %>/teacher-dashboard" class="<%= "home".equals(hactive)?"active":"" %>">Dashboard</a>
-        <a href="<%= hctx %>/attendance" class="<%= "attendance".equals(hactive)?"active":"" %>">Attendance</a>
-      <% } else if (hAccountant) { %>
-        <a href="<%= hctx %>/finance-dashboard" class="<%= "home".equals(hactive)?"active":"" %>">Dashboard</a>
-      <% } else if (hHr) { %>
-        <a href="<%= hctx %>/hr-dashboard" class="<%= "home".equals(hactive)?"active":"" %>">Dashboard</a>
-        <a href="<%= hctx %>/hr" class="<%= "hr".equals(hactive)?"active":"" %>">HR</a>
-      <% } else { %>
-        <a href="<%= hctx %>/dashboard.jsp" class="<%= "home".equals(hactive)?"active":"" %>">Dashboard</a>
-        <% if (hAdmin) { %>
-          <a href="<%= hctx %>/my-dashboard" class="<%= "mysales".equals(hactive)?"active":"" %>">My Sales</a>
-        <% } %>
+      <a href="<%= hHome %>" class="<%= "home".equals(hactive)?"active":"" %>">Dashboard</a>
+      <% if (hCan.contains("MY_SALES") && !hHome.endsWith("/my-dashboard")) { %>
+        <a href="<%= hctx %>/my-dashboard" class="<%= "mysales".equals(hactive)?"active":"" %>">My Sales</a>
       <% } %>
 
       <%-- Students and Fees stay top-level: near-daily, single links, used by
-           almost every role — folding them into a menu would cost more clicks
+           almost every role - folding them into a menu would cost more clicks
            than it saves. --%>
-      <% if (hUser != null && hUser.canSeeStudents()) { %>
+      <% if (hCan.contains("STUDENT")) { %>
         <a href="<%= hctx %>/students"  class="<%= "students".equals(hactive)?"active":"" %>">Students</a>
       <% } %>
-      <% if (hFees) { %>
+      <% if (hCan.contains("FEES")) { %>
         <a href="<%= hctx %>/fees"      class="<%= "fees".equals(hactive)?"active":"" %>">Fees</a>
       <% } %>
 
-      <%-- Sales: the pipeline, front to back. Search/Leads are HR's too;
-           Follow-ups/Counsellors/Reminders are the counsellor's daily chase;
-           Targets is management's view of the same pipeline. --%>
-      <% if (hLeads || hSales || hTargets) { %>
+      <% if (hSalesAny) { %>
         <span class="nav-drop<%= hSalesCur ? " current" : "" %>">
           <button type="button" class="nav-drop-btn">Sales</button>
           <span class="nav-drop-menu">
@@ -110,84 +98,92 @@
               <a href="<%= hctx %>/search"    class="<%= "search".equals(hactive)?"active":"" %>">Search</a>
               <a href="<%= hctx %>/inquiries" class="<%= "leads".equals(hactive)?"active":"" %>">Leads</a>
             <% } %>
-            <% if (hSales) { %>
+            <% if (hCan.contains("SALES_FOLLOWUP")) { %>
               <a href="<%= hctx %>/followup"  class="<%= "followups".equals(hactive)?"active":"" %>">Follow-ups</a>
+            <% } %>
+            <% if (hCan.contains("SALES_COUNSELLOR")) { %>
               <a href="<%= hctx %>/demo"      class="<%= "demos".equals(hactive)?"active":"" %>">Counsellors</a>
+            <% } %>
+            <% if (hCan.contains("SALES_REMINDER")) { %>
               <a href="<%= hctx %>/reminders" class="<%= "reminders".equals(hactive)?"active":"" %>">Reminders</a>
             <% } %>
-            <% if (hTargets) { %>
+            <%-- a counsellor/ABM gets a read-only view of their own/team's targets --%>
+            <% if (hCan.contains("SALES_TARGET")) { %>
               <a href="<%= hctx %>/targets"   class="<%= "targets".equals(hactive)?"active":"" %>">Targets</a>
             <% } %>
           </span>
         </span>
       <% } %>
 
-      <%-- Academics: exams end-to-end (setup through results) plus attendance,
-           materials and support tickets. Not a counsellor's job. --%>
-      <% if (hAcademic) { %>
+      <% if (hAcadAny) { %>
         <span class="nav-drop<%= hAcademicCur ? " current" : "" %>">
           <button type="button" class="nav-drop-btn">Academics</button>
           <span class="nav-drop-menu">
-            <% if (!hTeacher) { %>
-              <a href="<%= hctx %>/attendance" class="<%= "attendance".equals(hactive)?"active":"" %>">Attendance</a>
+            <%  String[][] hAcad = {
+                    { "ACAD_ATTENDANCE",    "/attendance",          "attendance",    "Attendance" },
+                    { "ACAD_EXAM",          "/exams",               "exams",         "Exams" },
+                    { "ACAD_IMPORT",        "/exam-import",         "import",        "Import" },
+                    { "ACAD_EXAM_SETUP",    "/exam-setup",          "setup",         "Exam Setup" },
+                    { "ACAD_CANDIDATE",     "/candidates",          "candidates",    "Candidates" },
+                    { "ACAD_SCAN",          "/exam-scan",           "scan",          "Scan Sheets" },
+                    { "ACAD_RESULT",        "/scholarship-results", "results",       "Results" },
+                    { "ACAD_ONLINE_EXAM",   "/online-exams",        "onlineexams",   "Online Exams" },
+                    { "ACAD_ONLINE_RESULT", "/online-exam-results", "onlineresults", "Online Results" },
+                    { "ACAD_MATERIAL",      "/materials",           "materials",     "Materials" },
+                    { "ACAD_OMR",           "/omr",                 "omr",           "OMR" },
+                    { "ACAD_TICKETS",       "/manage-tickets",      "tickets",       "Tickets" } };
+                for (String[] l : hAcad) { if (!hCan.contains(l[0])) continue; %>
+              <a href="<%= hctx + l[1] %>" class="<%= l[2].equals(hactive)?"active":"" %>"><%= l[3] %></a>
             <% } %>
-            <a href="<%= hctx %>/exams"          class="<%= "exams".equals(hactive)?"active":"" %>">Exams</a>
-            <%-- Bulk lead import is office work, not a teacher's. --%>
-            <% if (!hTeacher) { %>
-              <a href="<%= hctx %>/exam-import"  class="<%= "import".equals(hactive)?"active":"" %>">Import</a>
-            <% } %>
-            <a href="<%= hctx %>/exam-setup"    class="<%= "setup".equals(hactive)?"active":"" %>">Exam Setup</a>
-            <a href="<%= hctx %>/candidates"     class="<%= "candidates".equals(hactive)?"active":"" %>">Candidates</a>
-            <a href="<%= hctx %>/exam-scan"     class="<%= "scan".equals(hactive)?"active":"" %>">Scan Sheets</a>
-            <a href="<%= hctx %>/scholarship-results"  class="<%= "results".equals(hactive)?"active":"" %>">Results</a>
-            <a href="<%= hctx %>/online-exams"   class="<%= "onlineexams".equals(hactive)?"active":"" %>">Online Exams</a>
-            <a href="<%= hctx %>/online-exam-results" class="<%= "onlineresults".equals(hactive)?"active":"" %>">Online Results</a>
-            <a href="<%= hctx %>/materials"      class="<%= "materials".equals(hactive)?"active":"" %>">Materials</a>
-            <a href="<%= hctx %>/omr"            class="<%= "omr".equals(hactive)?"active":"" %>">OMR</a>
-            <a href="<%= hctx %>/manage-tickets" class="<%= "tickets".equals(hactive)?"active":"" %>">Tickets</a>
           </span>
         </span>
       <% } %>
 
-      <%-- Finance: the institute's own money (admin/accountant, matching
-           AuthFilter) plus exam fees taken at the counter (office staff too). --%>
-      <% if (hFinance || hOffice) { %>
+      <% if (hFinAny) { %>
         <span class="nav-drop<%= hFinanceCur ? " current" : "" %>">
           <button type="button" class="nav-drop-btn">Finance</button>
           <span class="nav-drop-menu">
-            <% if (hFinance) { %>
-              <a href="<%= hctx %>/fund"      class="<%= "fund".equals(hactive)?"active":"" %>">Fund</a>
-              <a href="<%= hctx %>/vendors"   class="<%= "vendors".equals(hactive)?"active":"" %>">Vendors</a>
-              <a href="<%= hctx %>/work-orders" class="<%= "workorders".equals(hactive)?"active":"" %>">Work Orders</a>
-              <a href="<%= hctx %>/expenses"  class="<%= "expenses".equals(hactive)?"active":"" %>">Expenses</a>
-            <% } %>
-            <% if (hOffice) { %>
-              <a href="<%= hctx %>/exam-fees" class="<%= "examfees".equals(hactive)?"active":"" %>">Exam Fees</a>
+            <%  String[][] hFin = {
+                    { "FIN_FUND",       "/fund",        "fund",       "Fund" },
+                    { "FIN_VENDOR",     "/vendors",     "vendors",    "Vendors" },
+                    { "FIN_WORK_ORDER", "/work-orders", "workorders", "Work Orders" },
+                    { "FIN_EXPENSE",    "/expenses",    "expenses",   "Expenses" },
+                    { "FIN_EXAM_FEES",  "/exam-fees",   "examfees",   "Exam Fees" } };
+                for (String[] l : hFin) { if (!hCan.contains(l[0])) continue; %>
+              <a href="<%= hctx + l[1] %>" class="<%= l[2].equals(hactive)?"active":"" %>"><%= l[3] %></a>
             <% } %>
           </span>
         </span>
       <% } %>
 
-      <%-- People: staff attendance, leave, payroll and the directory. --%>
-      <% if (hPeople) { %>
+      <% if (hPeopleAny) { %>
         <span class="nav-drop<%= hPeopleCur ? " current" : "" %>">
           <button type="button" class="nav-drop-btn">People</button>
           <span class="nav-drop-menu">
-            <a href="<%= hctx %>/hr"        class="<%= "hr".equals(hactive)?"active":"" %>">HR</a>
+            <% if (hHrTab != null) { %>
+              <a href="<%= hctx %>/hr?tab=<%= hHrTab %>" class="<%= "hr".equals(hactive)?"active":"" %>">HR</a>
+            <% } %>
             <a href="<%= hctx %>/staff"     class="<%= "staff".equals(hactive)?"active":"" %>">Staff</a>
           </span>
         </span>
       <% } %>
 
-      <%-- Reports are institute-wide, so they stay on the management side. The
-           accountant gets Reports (most of them are financial) but not Targets,
-           which is a management decision rather than a bookkeeping one. --%>
-      <% if (hMgmt || hAccountant) { %>
+      <%-- your OWN attendance / leave / payslips (not the /hr register of everyone) --%>
+      <% if (hCan.contains("HR_ATTENDANCE") || hCan.contains("HR_LEAVE") || hCan.contains("HR_SALARY")) { %>
+        <a href="<%= hctx %>/my-hr" class="<%= "myhr".equals(hactive)?"active":"" %>">My HR</a>
+      <% } %>
+
+      <% if (hRptAny) { %>
         <a href="<%= hctx %>/reports"   class="<%= "reports".equals(hactive)?"active":"" %>">Reports</a>
+      <% } %>
+
+      <%-- System pages - administrator only, outside the matrix. --%>
+      <% if (hAdmin) { %>
+        <a href="<%= hctx %>/role-mapping" class="<%= "rolemapping".equals(hactive)?"active":"" %>">Role Mapping</a>
       <% } %>
     </span>
     <% if (hUser != null) { %>
-      <span class="user">👤 <%= hUser.getFullName() %> (<%= hUser.getRole() %>)</span>
+      <span class="user">👤 <%= hUser.getFullName() %> (<%= hUser.getRoleLabel() %>)</span>
     <% } %>
     <a class="logout" href="<%= hctx %>/logout">Logout</a>
   </nav>
